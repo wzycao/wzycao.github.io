@@ -1,6 +1,7 @@
 import * as T from './libs/CS559-Three/build/three.module.js';
 import { OBJLoader } from './libs/CS559-Three/examples/jsm/loaders/OBJLoader.js';
 import { OrbitControls } from "./libs/CS559-Three/examples/jsm/controls/OrbitControls.js";
+import { Powerup } from "./Powerup.js";
 
 
 /**
@@ -160,7 +161,7 @@ let dispSpeed = 0;
  * 
  */
 
-function animate() {
+function animate(timestamp) {
   
   // Controls
   if (controls[leftKey]) {
