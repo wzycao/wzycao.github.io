@@ -1,6 +1,6 @@
 import * as T from './libs/CS559-Three/build/three.module.js';
 import { OBJLoader } from './libs/CS559-Three/examples/jsm/loaders/OBJLoader.js';
-import { OrbitControls } from "../libs/CS559-Three/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "./libs/CS559-Three/examples/jsm/controls/OrbitControls.js";
 
 
 /**
@@ -76,11 +76,17 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 //Debugging camera
-const debug_camera = new T.PerspectiveCamera();
-let debug_controls = new OrbitControls(debug_camera, renderer.domElement);
-scene.add(debug_camera);
+const debug_camera = new T.PerspectiveCamera(90);
+debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
+
+// Add orbit controls for debugging camera
+const debugControls = new OrbitControls(debug_camera, renderer.domElement);
+debugControls.enableDamping = false; 
+debugControls.dampingFactor = 0.05;
+debugControls.target.set(0, 0, 0);
+
 //Main light source 
-const light = new T.HemisphereLight( 0xffffbb, 0x080820, 1 );
+const light = new T.HemisphereLight( 0xffe57d, 0x6e6d6a, 1 );
 scene.add(light);
 
 
@@ -89,7 +95,7 @@ scene.add(light);
 
 //Objects
 
-//Replace cube with either a collision box or point (which will be used to generate other stuff like the model)
+// Anchor point
 const geometry = new T.BoxGeometry( 0.1, 0.1, 0.1 );
 const material = new T.MeshStandardMaterial();
 const cube = new T.Mesh( geometry, material );
@@ -99,26 +105,17 @@ scene.add( cube );
 cube.add(camera);
 
 
-//Bounding Box 1
-const geometry1 = new T.BoxGeometry( 4, 4, 5 );
-const wireframeMat = new T.MeshStandardMaterial({wireframe:true});
-const cube1 = new T.Mesh( geometry1, wireframeMat );
-cube.add(cube1);
-
-//Bounding Box 2
-const geometry2 = new T.BoxGeometry( 2, 2, 4.5 );
-const cube2 = new T.Mesh( geometry2, wireframeMat );
-cube1.add(cube2);
-
-
 camera.position.set(0,5,10);
 
 
+
+// Main character
 let loader = new OBJLoader();
 
 let manMat = new T.MeshPhongMaterial({
-      color: "#888888",
-      shininess: 50
+      color: 0xc1258f,
+      specular: 0xd08686,
+      shininess: 30
     });
 
 let main_man = await loader.loadAsync("./objects/FinalBaseMesh.obj");
@@ -130,11 +127,20 @@ main_man.traverse(obj => {
     });
 
 main_man.scale.set(0.25,0.25,0.25);
-main_man.position.set(0,-0.8,3);
-main_man.rotation.set(2,0,3.13);
+main_man.position.set(0,-0.6,3);
 cube.add(main_man);
 
+//Bounding Box 1
+const geometry1 = new T.BoxGeometry( 20, 30, 10 );
+const wireframeMat = new T.MeshStandardMaterial({wireframe:true});
+const cube1 = new T.Mesh( geometry1, wireframeMat );
+cube1.position.set(0,10,0);
+main_man.add(cube1);
 
+//Bounding Box 2
+const geometry2 = new T.BoxGeometry( 7, 19, 4.5 );
+const cube2 = new T.Mesh( geometry2, wireframeMat );
+cube1.add(cube2);
 
 let rotVel = 0;
 let upVel = 0;
@@ -147,7 +153,7 @@ let upSpeed = 0.015;
 let fwdSpeed = -0.09;
 let dispSpeed = 0;
 
-renderer.render(scene, debug_camera);
+
 
 /**
  * Main animation loop
@@ -205,12 +211,12 @@ function animate() {
   charRotX = 2*upVel;
   charRotY = 50*rotVel;
   charRotZ = 10*rotVel;
-  main_man.rotation.set(1.8 + charRotX,0 + charRotY,3.13 - charRotZ );
-  cube1.rotation.set( charRotX,0.5*charRotY,2*charRotZ)
+  main_man.rotation.set(1.75 + charRotX,0 + charRotY,3.13 - charRotZ );
+  cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ)
 
 
   // comment out translateZ here for debug
-  //cube.translateZ(fwdSpeed);
+  cube.translateZ(fwdSpeed);
 
 
   //Display current speed as a rounded integer
@@ -218,11 +224,14 @@ function animate() {
   dispSpeed = Math.floor(-7*fwdSpeed);
 
   speedUI.textContent = dispSpeed;
-  renderer.render(scene, debug_camera);
+
+
+  //Replace camera with debug_camera for debugging
+  renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
+
 // place requestAnimationFrame(animate); here for easy debug (graphics will always be showing)
-requestAnimationFrame(animate);
 
 
 
