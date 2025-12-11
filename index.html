@@ -4,6 +4,45 @@
     <title>HouTou</title>
   </head>
   <body>
+    <div id="main-menu">
+          <button id="start">Start Scene</button>
+          <button id="controls">Controls</button>
+
+          <div id="controls-menu">
+
+              <label for="moveUp">Move Up:</label>
+              <input type="text" id="moveUp" name="upKey"><br><br>
+
+              <label for="moveDown">Move Down:</label>
+              <input type="text" id="moveDown" name="downKey"><br><br>
+
+              <label for="moveLeft">Move Left:</label>
+              <input type="text" id="moveLeft" name="leftKey"><br><br>
+
+              <label for="moveRight">Move Right:</label>
+              <input type="text" id="moveRight" name="rightKey"><br><br>  
+
+              <label for="accel">Accelerate:</label>
+              <input type="text" id="accel" name="accelKey"><br><br>
+
+              <label for="decel">Decelerate:</label>
+              <input type="text" id="decel" name="decelKey"><br><br>  
+
+        
+              <button onclick="changeControls()">Done</button>
+          </div>
+
+    </div>
+
+    
     <script type="module" src ="/main.js"></script>
+    <script type="importmap">
+      {
+          "imports": {
+              "three": "../libs/CS559-Three/build/three.module.js"
+          }
+      }
+  </script>
+  
   </body>
 </html>
