@@ -30,6 +30,7 @@ let slowKey = "shift";
  */
 const speedUI = document.querySelector("#speed");
 const pointsUI = document.querySelector("#points");
+const grazeUI = document.querySelector("#graze");
 
 const controls = {
   w: false,
@@ -233,10 +234,14 @@ powerups.add(p2.mesh);
 
 // Also store references so you can update them
 let powerup_objects = [p1, p2];
+let bullet_objects = [];
 
 
 
-
+/**
+ * Powerup and Bullet Spawns
+ * 
+ */
 
 function spawnPowerup(time) {
     // use time to produce deterministic random x/z
@@ -250,6 +255,37 @@ function spawnPowerup(time) {
     powerup_objects.push(p);
 }
 
+function spawnBullet(time) {
+    //spawn bullet on either max X (+/-) or max Z (+/-)
+    //randomize other element
+    const side = Math.floor(Math.random() * 4);
+    let x, y, z;
+    y = Math.abs(Math.random() * 100); //random Y between 0 and 100
+    switch(side) {
+        case 0: // +X side
+            x = 250;
+            z = (Math.random() - 0.5) * 500;
+            break;
+        case 1: // -X side
+            x = -250;
+            z = (Math.random() - 0.5) * 500;
+            break;
+        case 2: // +Z side
+            z = 250;
+            x = (Math.random() - 0.5) * 500;
+            break;
+        case 3: // -Z side
+            z = -250;
+            x = (Math.random() - 0.5) * 500;
+            break;
+    } 
+
+    let b = new Bullet(side, { x, y, z });
+
+    
+    boolats.add(b.mesh);
+    bullet_objects.push(b);
+}
 
 
 
@@ -322,6 +358,7 @@ function animate(timestamp) {
   charRotX = 2*upVel;
   charRotY = 50*rotVel;
   charRotZ = 10*rotVel;
+  //The intial values were calculated from guess-and-checking the model to see what rotation looked good
   main_man.rotation.set(1.75 + charRotX,0 + charRotY,3.13 - charRotZ );
   cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ);
 
@@ -345,6 +382,10 @@ function animate(timestamp) {
       spawnPowerup(timestamp);
   }
 
+  if (Math.floor(Math.random() * 10) === 0) {
+      spawnBullet(timestamp);
+  }
+
 
 
   powerup_objects.forEach((p, i) => {
@@ -355,7 +396,6 @@ function animate(timestamp) {
             //can add more stuff later
             points++;
 
-
             // Remove from group AND from scene
             powerups.remove(p.mesh);
 
@@ -363,6 +403,21 @@ function animate(timestamp) {
         }
     });
 
+bullet_objects.forEach((b, i) => {
+        b.update(timeDelta);
+        if (b.box.intersectsBox(outerCollisionBox)) {
+            console.log("Grazed by bullet:", i);
+            graze += 0.001;
+        } else if (b.box.intersectsBox(innerCollisionBox)) {
+            console.log("Hit by bullet:", i);
+            boolats.remove(b.mesh);
+            bullet_objects.splice(i, 1);
+        } else if (b.finished) {
+            // Remove bullets that have finished their travel
+            boolats.remove(b.mesh);
+            bullet_objects.splice(i, 1);
+        }
+    });    
 
 
 
@@ -373,6 +428,7 @@ function animate(timestamp) {
 
   speedUI.textContent = dispSpeed;
   pointsUI.textContent = points;
+  grazeUI.textContent = graze;
 
 
   //Replace camera with debug_camera for debugging
