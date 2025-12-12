@@ -3,6 +3,10 @@ import * as T from './libs/CS559-Three/build/three.module.js';
 class Powerup {
     constructor(position = { x: 0, y: 0, z: 0 }) {
 
+        this.x = position.x;
+        this.y = position.y;
+        this.z = position.z;
+
         // Cube Mesh
         const geo = new T.BoxGeometry(1, 1, 1);
         const mat = new T.MeshStandardMaterial({
@@ -15,7 +19,7 @@ class Powerup {
         this.mesh.position.set(position.x, position.y, position.z);
 
         // Light inside cube
-        this.light = new T.PointLight(0x00ffcc, 1, 6);
+        this.light = new T.PointLight(0x00ffcc, 3, 10);
         this.mesh.add(this.light);              
 
         // Bounding box
@@ -24,18 +28,17 @@ class Powerup {
         this.time = 0;
     }
 
-    pickupPower() {
-
-    }
 
     update(dt) {
         // Update bounding box
         this.box.setFromObject(this.mesh);
 
-        // Optional glowing animation
+        
+
         this.time += dt;
-        const pulse = (Math.sin(this.time * 3) + 1) * 0.5;
-        this.mesh.material.emissiveIntensity = 1 + pulse * 0.8;
+        const pulse = (Math.sin(this.time * 0.005) + 1) * 0.5;
+        this.mesh.position.y = this.y + pulse;
+        this.mesh.material.emissiveIntensity = 1 + pulse * 2;
     }
 }
 

@@ -8,6 +8,10 @@ h1{
     font-family: Arial, Helvetica, sans-serif;
 }
 
+input{
+    width:50px;
+}
+
 #ui{
     margin: 0;
     position: absolute;
@@ -15,4 +19,16 @@ h1{
     left:10px;
 }
 
+#main-menu{
+    margin: 0;
+    text-align:center;
+    top:10px;
+    left:10px;
+}
 
+#controls-menu{
+    margin: 10px;
+    text-align:center;
+    top:10px;
+    left:10px;
+}

@@ -1,8 +1,8 @@
 import * as T from './libs/CS559-Three/build/three.module.js';
 import { OBJLoader } from './libs/CS559-Three/examples/jsm/loaders/OBJLoader.js';
 import { OrbitControls } from "./libs/CS559-Three/examples/jsm/controls/OrbitControls.js";
-import { Powerup } from "./Powerup.js";
-
+import { Powerup } from './powerup.js';
+import { Bullet } from './Bullet.js';
 
 /**
  * Intialize html elements
@@ -13,6 +13,7 @@ let sceneActive = false;
 let optionsMenu = false;
 document.getElementById('controls-menu').style.display = 'none';
 document.getElementById('ui').style.display = 'none';
+document.getElementById('info-menu').style.display = 'none';
 
 let upKey = "w";
 let downKey = "s";
@@ -22,12 +23,13 @@ let rightKey = "d";
 let accelKey = "q";
 let decelKey = "e";
 
+let slowKey = "shift";
 
 /**
  * Display variables
  */
 const speedUI = document.querySelector("#speed");
-
+const pointsUI = document.querySelector("#points");
 
 const controls = {
   w: false,
@@ -36,7 +38,9 @@ const controls = {
   d: false,
 
   q: false,
-  e: false
+  e: false,
+
+  shift: false
 };
 
 // do later :)
@@ -98,8 +102,10 @@ scene.add(light);
 
 // Anchor point
 const geometry = new T.BoxGeometry( 0.1, 0.1, 0.1 );
-const material = new T.MeshStandardMaterial();
-const cube = new T.Mesh( geometry, material );
+
+//Fully transparent material we will use later for bounding boxes
+const wireframeMat = new T.MeshStandardMaterial({opacity: 0.0, transparent: true});
+const cube = new T.Mesh( geometry, wireframeMat );
 const axesHelper = new T.AxesHelper(4); 
 cube.add(axesHelper);
 scene.add( cube );
@@ -110,10 +116,19 @@ camera.position.set(0,5,10);
 
 
 
-// Main character
+/**
+ * Main Character
+ * 
+ */
 let loader = new OBJLoader();
 
 let manMat = new T.MeshPhongMaterial({
+      color: 0xffdead,
+      specular: 0xd08686,
+      shininess: 30
+    });
+
+let bowMat = new T.MeshPhongMaterial({
       color: 0xc1258f,
       specular: 0xd08686,
       shininess: 30
@@ -131,18 +146,38 @@ main_man.scale.set(0.25,0.25,0.25);
 main_man.position.set(0,-0.6,3);
 cube.add(main_man);
 
-//Bounding Box 1
-const geometry1 = new T.BoxGeometry( 20, 30, 10 );
-const wireframeMat = new T.MeshStandardMaterial({wireframe:true});
+// bow to make him sliiightly resemble a touhou character
+
+let bow = await loader.loadAsync("./objects/19331_Bow_v1.obj");
+
+bow.traverse(obj => {
+        if (obj instanceof T.Mesh) {
+            obj.material = bowMat;
+        }
+    });
+
+bow.position.set(0,20,-1.5);
+main_man.add(bow);
+
+
+//Bounding Box 1 (Outer)
+const geometry1 = new T.BoxGeometry( 25, 35, 10 );
 const cube1 = new T.Mesh( geometry1, wireframeMat );
 cube1.position.set(0,10,0);
 main_man.add(cube1);
 
-//Bounding Box 2
-const geometry2 = new T.BoxGeometry( 7, 19, 4.5 );
+//Bounding Box 2 (Inner)
+const geometry2 = new T.BoxGeometry( 5, 15, 4.5 );
 const cube2 = new T.Mesh( geometry2, wireframeMat );
 cube1.add(cube2);
 
+
+/**
+ * Variables for main loop
+ * 
+ */
+
+//Player Variables
 let rotVel = 0;
 let upVel = 0;
 let charRotX = 0;
@@ -154,37 +189,91 @@ let upSpeed = 0.015;
 let fwdSpeed = -0.09;
 let dispSpeed = 0;
 
+//Score Variables
+let graze = 0;
+let points = 0;
+let score = 0;
+
+//Doing this method of setting boxes creates a best-guess instead of a perfectly aligned box, which works for now
+let innerCollisionBox = new T.Box3().setFromObject(cube2);
+let outerCollisionBox = new T.Box3().setFromObject(cube1);
+
+
+// Debug to show hitboxes
+
+// let debug = new T.Group();
+
+// let debugBox1 = new T.Box3Helper(innerCollisionBox);
+// let debugBox2 = new T.Box3Helper(outerCollisionBox);
+
+// debug.add(debugBox1);
+// debug.add(debugBox2);
+
+// scene.add(debug);
+
+
+//Powerup group
+let powerups = new T.Group();
+
+//Bullet group
+let boolats = new T.Group();
+
+scene.add(powerups);
+scene.add(boolats);
+
+let p1 = new Powerup({ x: 40, y: 15, z: 0 });
+let p2 = new Powerup({ x: -20, y: 1, z: 15 });
+
+// Add them to the group
+powerups.add(p1.mesh);
+powerups.add(p2.mesh);
+
+// Also store references so you can update them
+let powerup_objects = [p1, p2];
 
 
 /**
  * Main animation loop
  * 
  */
+let lastTimestamp; // undefined to start
 
 function animate(timestamp) {
+
+  // Convert time change from milliseconds to seconds
+  let timeDelta = (lastTimestamp ? timestamp - lastTimestamp : 0);
+  lastTimestamp = timestamp;
+
   
-  // Controls
+  
+  /**
+   * Main character stuff
+   * 
+   */
+
+  //Main character Controls
   if (controls[leftKey]) {
     rotVel += rotSpeed;
   }
 
-  if (controls.d) {
+  if (controls[rightKey]) {
     rotVel -= rotSpeed;
   }
 
-  if (controls.w) {
+  if (controls[upKey]) {
     upVel += upSpeed;
   }
 
-  if (controls.s) {
+  if (controls[downKey]) {
     upVel -= upSpeed;
   }
 
-  if (controls.q) {
+
+  if (controls[accelKey]) {
     fwdSpeed -= 0.001;
   }
 
-  if (controls.e) {
+  if (controls[decelKey]) {
     fwdSpeed += 0.001;
     if (fwdSpeed >= -0.1) {
       fwdSpeed = -0.1;
@@ -198,26 +287,59 @@ function animate(timestamp) {
   upVel = Math.min(Math.max(upVel, -0.1), 0.1);
 
 
-  // add velocities
+  // add velocities to cube
   cube.rotation.y += rotVel;
   cube.position.y += upVel;
-  //this is to make velocity eventually return to 0. This makes the movement feel a little bit more slippery (you won't stop turning or moving 
-  //instantly), but this actually seems better than just being able to control your motion entirely
-  rotVel *= 0.95;
-  upVel *= 0.96;
 
-  // this sucks really bad, but if you change rotation and up values 
+  //this is to make velocity eventually return to 0. This makes the movement feel a little bit more slippery (you won't stop turning or moving 
+  //instantly), but this seems better than just being able to control your motion entirely as it appears more smooth. 
+  //For a touhou-like this isn't ideal tho
+  rotVel *= 0.95;
+  upVel *= 0.95;
+
+  // this code sucks really bad, but if you change rotation and up values 
   // remember to change the multipliers here
   
   charRotX = 2*upVel;
   charRotY = 50*rotVel;
   charRotZ = 10*rotVel;
   main_man.rotation.set(1.75 + charRotX,0 + charRotY,3.13 - charRotZ );
-  cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ)
+  cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ);
 
 
-  // comment out translateZ here for debug
-  cube.translateZ(fwdSpeed);
+  if (controls[slowKey]) {
+    cube.translateZ(-0.1);
+  } else {
+    // comment out translateZ here for debug
+    cube.translateZ(fwdSpeed);
+  }
+  
+  //Update collision boxes for main character
+  innerCollisionBox.setFromObject(cube2);
+  outerCollisionBox.setFromObject(cube1);
+
+  /**
+   * Bullet & Powerup Stuff
+   * 
+   */
+  powerup_objects.forEach((p, i) => {
+        p.update(timeDelta);
+        if (p.box.intersectsBox(innerCollisionBox)) {
+            console.log("Collected powerup:", i);
+            //For now powerup just adds to your score, but
+            //can add more stuff later
+            points++;
+
+
+            // Remove from group AND from scene
+            powerups.remove(p.mesh);
+
+            powerup_objects.splice(i, 1);
+        }
+    });
+
+
+
 
 
   //Display current speed as a rounded integer
@@ -225,6 +347,7 @@ function animate(timestamp) {
   dispSpeed = Math.floor(-7*fwdSpeed);
 
   speedUI.textContent = dispSpeed;
+  pointsUI.textContent = points;
 
 
   //Replace camera with debug_camera for debugging
@@ -233,7 +356,7 @@ function animate(timestamp) {
 }
 
 // place requestAnimationFrame(animate); here for easy debug (graphics will always be showing)
-
+// requestAnimationFrame(animate);
 
 
 /**
@@ -250,7 +373,18 @@ document.getElementById('start').addEventListener('click', () => {
         }
 });
 
+let fuckyou = false; 
+
+
+//Two menus, only one can be visible at a time
+
 document.getElementById('controls').addEventListener('click', () => {
+
+        if (fuckyou) {
+          fuckyou = !fuckyou;
+          document.getElementById('info-menu').style.display = 'none';
+        } 
+
         optionsMenu = !optionsMenu;
         if (optionsMenu) {
             document.getElementById('controls-menu').style.display = 'block';
@@ -259,6 +393,22 @@ document.getElementById('controls').addEventListener('click', () => {
         }
 });
 
+
+
+document.getElementById('info').addEventListener('click', () => {
+
+        if (optionsMenu) {
+          optionsMenu = !optionsMenu;
+          document.getElementById('controls-menu').style.display = 'none';
+        }   
+
+        fuckyou = !fuckyou;
+        if (fuckyou) {
+            document.getElementById('info-menu').style.display = 'block';
+        } else {
+          document.getElementById('info-menu').style.display = 'none';
+        }
+});
 
 
 

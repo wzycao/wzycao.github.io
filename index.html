@@ -1,34 +1,52 @@
 <!doctype html>
 <html>
   <head>
-    <title>HouTou</title>
+    <title>BGRB </title>
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
 
     <div id="main-menu">
-          <button id="start">Start Scene</button>
+          <h1>Welcome to BGRB!</h1>
+          <h3>also known as... <span style="color:blue">Blue = Good</span>, <span style="color:red">Red = Bad</span>.</h3>
+
+          <p>Fly around as Temu Reimu while avoiding bullets and collecting powerups!</p>
+          <p>Get the higest score you can!</p>
+
+          <button id="start">Start!</button>
           <button id="controls">Controls</button>
+          <button id="info">More Info</button>
+
+
+          <div id="info-menu">
+            <p>This game is loosely inspired from the Touhou Project series.</p>
+            <p> The twist is that it's 3d instead of 2d, as the games are traditionally.</p> 
+            <p>Grazing works similarly, but the player hitboxes are a little wonky.</p>
+            <p>Additionally, movement isnt as razor-tight because I think it looks better smooth lol.</p>
+          </div>
 
           <div id="controls-menu">
 
               <label for="moveUp">Move Up:</label>
-              <input type="text" id="moveUp" name="upKey"><br><br>
+              <input type="text" id="moveUp" name="upKey" value="w"><br><br>
 
               <label for="moveDown">Move Down:</label>
-              <input type="text" id="moveDown" name="downKey"><br><br>
+              <input type="text" id="moveDown" name="downKey" value="s"><br><br>
 
               <label for="moveLeft">Move Left:</label>
-              <input type="text" id="moveLeft" name="leftKey"><br><br>
+              <input type="text" id="moveLeft" name="leftKey" value="a"><br><br>
 
               <label for="moveRight">Move Right:</label>
-              <input type="text" id="moveRight" name="rightKey"><br><br>  
+              <input type="text" id="moveRight" name="rightKey" value="d"><br><br>  
 
               <label for="accel">Accelerate:</label>
-              <input type="text" id="accel" name="accelKey"><br><br>
+              <input type="text" id="accel" name="accelKey" value="q"><br><br>
 
               <label for="decel">Decelerate:</label>
-              <input type="text" id="decel" name="decelKey"><br><br>  
+              <input type="text" id="decel" name="decelKey" value="e"><br><br>  
+
+              <label for="slow">Focus:</label>
+              <input type="text" id="decel" name="decelKey" value="shift"><br><br>  
 
         
               <button onclick="changeControls()">Done</button>
