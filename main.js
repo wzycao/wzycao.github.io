@@ -3,6 +3,7 @@ import { OBJLoader } from './libs/CS559-Three/examples/jsm/loaders/OBJLoader.js'
 import { OrbitControls } from "./libs/CS559-Three/examples/jsm/controls/OrbitControls.js";
 import { Powerup } from './powerup.js';
 import { Bullet } from './Bullet.js';
+import { Pillar } from './Pillar.js';
 
 /**
  * Intialize html elements
@@ -75,21 +76,21 @@ const camera = new T.PerspectiveCamera( 75, window.innerWidth / window.innerHeig
 
 const renderer = new T.WebGLRenderer();
 scene.fog = new T.Fog(0x87ceeb, 1, 500);
-const gridHelper = new T.GridHelper(500, 50); // 500 units wide, 50 subdivisions
+const gridHelper = new T.GridHelper(250, 50); // 250 units wide, 50 subdivisions
 scene.add(gridHelper);
 
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-// //Debugging camera
-// const debug_camera = new T.PerspectiveCamera(90);
-// debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
+//Debugging camera
+const debug_camera = new T.PerspectiveCamera(90);
+debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
 
-// // Add orbit controls for debugging camera
-// const debugControls = new OrbitControls(debug_camera, renderer.domElement);
-// debugControls.enableDamping = false; 
-// debugControls.dampingFactor = 0.05;
-// debugControls.target.set(0, 0, 0);
+// Add orbit controls for debugging camera
+const debugControls = new OrbitControls(debug_camera, renderer.domElement);
+debugControls.enableDamping = false; 
+debugControls.dampingFactor = 0.05;
+debugControls.target.set(0, 0, 0);
 
 //Main light source 
 const light = new T.HemisphereLight( 0xffe57d, 0x6e6d6a, 1 );
@@ -163,7 +164,7 @@ main_man.add(bow);
 
 
 //Bounding Box 1 (Outer)
-const geometry1 = new T.BoxGeometry( 25, 35, 10 );
+const geometry1 = new T.BoxGeometry( 35, 35, 15 );
 const cube1 = new T.Mesh( geometry1, wireframeMat );
 cube1.position.set(0,10,0);
 main_man.add(cube1);
@@ -190,7 +191,7 @@ let charRotY = 0;
 let rotSpeed = 0.001;
 let upSpeed = 0.015;
 let strSpeed = 0.015;
-let fwdSpeed = -0.5;
+let fwdSpeed = -0.35;
 let dispSpeed = 0;
 
 //Score Variables
@@ -222,6 +223,10 @@ let powerups = new T.Group();
 //Bullet group
 let boolats = new T.Group();
 
+//Pillar group
+let pillars = new T.Group();
+
+scene.add(pillars);
 scene.add(powerups);
 scene.add(boolats);
 
@@ -235,6 +240,8 @@ powerups.add(p2.mesh);
 // Also store references so you can update them
 let powerup_objects = [p1, p2];
 let bullet_objects = [];
+let pillar_objects = [];
+
 
 
 
@@ -245,9 +252,9 @@ let bullet_objects = [];
 
 function spawnPowerup(time) {
     // use time to produce deterministic random x/z
-    const x = Math.sin(time*1000) * 250;
+    const x = Math.sin(time*1000) * 125;
     const y = Math.abs(Math.random() * 100);
-    const z = Math.sin(time/500) * 250;
+    const z = Math.sin(time/500) * 125;
 
     let p = new Powerup({ x, y, z });
     
@@ -263,20 +270,20 @@ function spawnBullet(time) {
     y = Math.abs(Math.random() * 100); //random Y between 0 and 100
     switch(side) {
         case 0: // +X side
-            x = 250;
-            z = (Math.random() - 0.5) * 500;
+            x = 125;
+            z = (Math.random() - 0.5) * 250;
             break;
         case 1: // -X side
-            x = -250;
-            z = (Math.random() - 0.5) * 500;
+            x = -125;
+            z = (Math.random() - 0.5) * 250;
             break;
         case 2: // +Z side
-            z = 250;
-            x = (Math.random() - 0.5) * 500;
+            z = 125;
+            x = (Math.random() - 0.5) * 250;
             break;
         case 3: // -Z side
-            z = -250;
-            x = (Math.random() - 0.5) * 500;
+            z = -125;
+            x = (Math.random() - 0.5) * 250;
             break;
     } 
 
@@ -286,6 +293,20 @@ function spawnBullet(time) {
     boolats.add(b.mesh);
     bullet_objects.push(b);
 }
+
+
+
+  // Function to spawn pillars
+  function spawnPillar(time) {
+      const x = Math.sin(time * 1000) * 125;
+      const y = 0; // Ground level
+      const z = Math.cos(time * 1000) * 125;
+
+      const pillar = new Pillar({x, y, z});
+
+      pillars.add(pillar.mesh);
+      pillar_objects.push(pillar);
+  }
 
 
 
@@ -363,12 +384,12 @@ function animate(timestamp) {
   cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ);
 
 
-  if (controls[slowKey]) {
-    cube.translateZ(-0.1);
-  } else {
-    // comment out translateZ here for debug
-    cube.translateZ(fwdSpeed);
-  }
+  // if (controls[slowKey]) {
+  //   cube.translateZ(-0.75);
+  // } else {
+  //   // comment out translateZ here for debug
+  //   cube.translateZ(fwdSpeed);
+  // }
   
   //Update collision boxes for main character
   innerCollisionBox.setFromObject(cube2);
@@ -382,11 +403,15 @@ function animate(timestamp) {
       spawnPowerup(timestamp);
   }
 
-  if (Math.floor(Math.random() * 10) === 0) {
+  if (Math.floor(Math.random() * 500) === 0) {
       spawnBullet(timestamp);
   }
 
-
+   
+  if (Math.floor(Math.random() * 500) === 0) {
+      console.log("Pillar spawned");
+      spawnPillar(timestamp);
+  }
 
   powerup_objects.forEach((p, i) => {
         p.update(timeDelta);
@@ -405,20 +430,31 @@ function animate(timestamp) {
 
 bullet_objects.forEach((b, i) => {
         b.update(timeDelta);
-        if (b.box.intersectsBox(outerCollisionBox)) {
-            console.log("Grazed by bullet:", i);
-            graze += 0.001;
-        } else if (b.box.intersectsBox(innerCollisionBox)) {
+        if (b.box.intersectsBox(innerCollisionBox)) {
             console.log("Hit by bullet:", i);
             boolats.remove(b.mesh);
             bullet_objects.splice(i, 1);
+        } else if (b.box.intersectsBox(outerCollisionBox)) {
+            console.log("Grazed by bullet:", i);
+            graze += 0.001;
         } else if (b.finished) {
             // Remove bullets that have finished their travel
             boolats.remove(b.mesh);
             bullet_objects.splice(i, 1);
         }
     });    
-
+  
+  pillar_objects.forEach((p, i) => {
+    p.update(timeDelta);
+    if (p.box.intersectsBox(outerCollisionBox)) {
+      console.log("Grazed by pillar:", i);
+      graze += 0.001;
+    } else if (p.box.intersectsBox(innerCollisionBox)) {
+      console.log("Hit by pillar:", i);
+      pillars.remove(p.mesh);
+      pillar_objects.splice(i, 1);
+    }
+  });
 
 
 
@@ -432,12 +468,12 @@ bullet_objects.forEach((b, i) => {
 
 
   //Replace camera with debug_camera for debugging
-  renderer.render(scene, camera);
+  renderer.render(scene, debug_camera);
   requestAnimationFrame(animate);
 }
 
 // place requestAnimationFrame(animate); here for easy debug (graphics will always be showing)
-// requestAnimationFrame(animate);
+requestAnimationFrame(animate);
 
 
 /**

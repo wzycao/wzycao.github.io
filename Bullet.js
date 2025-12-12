@@ -9,7 +9,7 @@ class Bullet {
 
 
         // Cube Mesh
-        const geo = new T.SphereGeometry(2);
+        const geo = new T.SphereGeometry(4);
         const mat = new T.MeshStandardMaterial({
             color: 0xfc0303,
             emissive: 0xfc0303,
@@ -38,20 +38,20 @@ class Bullet {
 
         switch(side) {
             case 0: //+X
-                this.speedX = -0.5;
-                this.endX = -10;
+                this.speedX = -0.1;
+                this.endX = -5;
                 break;
             case 1: //-X
-                this.speedX = 0.5;
-                this.endX = 10;
+                this.speedX = 0.1;
+                this.endX = 5;
                 break;
             case 2: //+Z
-                this.speedZ = -0.5;
-                this.endZ = -10;
+                this.speedZ = -0.1;
+                this.endZ = -5;
                 break;
             case 3: //-Z
-                this.speedZ = 0.5;
-                this.endZ = 10;
+                this.speedZ = 0.1;
+                this.endZ = 5;
                 break;        
         }
     }
