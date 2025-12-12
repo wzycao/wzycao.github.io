@@ -8,7 +8,7 @@ class Powerup {
         this.z = position.z;
 
         // Cube Mesh
-        const geo = new T.BoxGeometry(1, 1, 1);
+        const geo = new T.BoxGeometry(2, 2, 2);
         const mat = new T.MeshStandardMaterial({
             color: 0x00ffcc,
             emissive: 0x00ffcc,
@@ -36,8 +36,8 @@ class Powerup {
         
 
         this.time += dt;
-        const pulse = (Math.sin(this.time * 0.005) + 1) * 0.5;
-        this.mesh.position.y = this.y + pulse;
+        const pulse = Math.abs(Math.sin(this.time));
+        this.mesh.position.y = this.y + 3*pulse;
         this.mesh.material.emissiveIntensity = 1 + pulse * 2;
     }
 }

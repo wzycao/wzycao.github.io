@@ -20,8 +20,8 @@ let downKey = "s";
 let leftKey = "a";
 let rightKey = "d";
 
-let accelKey = "q";
-let decelKey = "e";
+let strLKey = "q";
+let strRKey = "e";
 
 let slowKey = "shift";
 
@@ -80,15 +80,15 @@ scene.add(gridHelper);
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-//Debugging camera
-const debug_camera = new T.PerspectiveCamera(90);
-debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
+// //Debugging camera
+// const debug_camera = new T.PerspectiveCamera(90);
+// debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
 
-// Add orbit controls for debugging camera
-const debugControls = new OrbitControls(debug_camera, renderer.domElement);
-debugControls.enableDamping = false; 
-debugControls.dampingFactor = 0.05;
-debugControls.target.set(0, 0, 0);
+// // Add orbit controls for debugging camera
+// const debugControls = new OrbitControls(debug_camera, renderer.domElement);
+// debugControls.enableDamping = false; 
+// debugControls.dampingFactor = 0.05;
+// debugControls.target.set(0, 0, 0);
 
 //Main light source 
 const light = new T.HemisphereLight( 0xffe57d, 0x6e6d6a, 1 );
@@ -96,9 +96,10 @@ scene.add(light);
 
 
 
-
-
-//Objects
+/**
+ * Objects
+ * 
+ */
 
 // Anchor point
 const geometry = new T.BoxGeometry( 0.1, 0.1, 0.1 );
@@ -112,7 +113,7 @@ scene.add( cube );
 cube.add(camera);
 
 
-camera.position.set(0,5,10);
+camera.position.set(0,3,15);
 
 
 
@@ -180,13 +181,15 @@ cube1.add(cube2);
 //Player Variables
 let rotVel = 0;
 let upVel = 0;
+let strVel = 0;
 let charRotX = 0;
 let charRotZ = 0;
 let charRotY = 0;
 
 let rotSpeed = 0.001;
 let upSpeed = 0.015;
-let fwdSpeed = -0.09;
+let strSpeed = 0.015;
+let fwdSpeed = -0.5;
 let dispSpeed = 0;
 
 //Score Variables
@@ -201,15 +204,15 @@ let outerCollisionBox = new T.Box3().setFromObject(cube1);
 
 // Debug to show hitboxes
 
-// let debug = new T.Group();
+let debug = new T.Group();
 
-// let debugBox1 = new T.Box3Helper(innerCollisionBox);
-// let debugBox2 = new T.Box3Helper(outerCollisionBox);
+let debugBox1 = new T.Box3Helper(innerCollisionBox);
+let debugBox2 = new T.Box3Helper(outerCollisionBox);
 
-// debug.add(debugBox1);
-// debug.add(debugBox2);
+debug.add(debugBox1);
+debug.add(debugBox2);
 
-// scene.add(debug);
+scene.add(debug);
 
 
 //Powerup group
@@ -232,6 +235,24 @@ powerups.add(p2.mesh);
 let powerup_objects = [p1, p2];
 
 
+
+
+
+function spawnPowerup(time) {
+    // use time to produce deterministic random x/z
+    const x = Math.sin(time*1000) * 250;
+    const y = Math.abs(Math.random() * 100);
+    const z = Math.sin(time/500) * 250;
+
+    let p = new Powerup({ x, y, z });
+    
+    powerups.add(p.mesh);
+    powerup_objects.push(p);
+}
+
+
+
+
 /**
  * Main animation loop
  * 
@@ -241,7 +262,7 @@ let lastTimestamp; // undefined to start
 function animate(timestamp) {
 
   // Convert time change from milliseconds to seconds
-  let timeDelta = (lastTimestamp ? timestamp - lastTimestamp : 0);
+  let timeDelta = 0.001 * (lastTimestamp ? timestamp - lastTimestamp : 0);
   lastTimestamp = timestamp;
 
   
@@ -269,33 +290,31 @@ function animate(timestamp) {
   }
 
 
-  if (controls[accelKey]) {
-    fwdSpeed -= 0.001;
+  if (controls[strLKey]) {
+    strVel -= strSpeed;
   }
 
-  if (controls[decelKey]) {
-    fwdSpeed += 0.001;
-    if (fwdSpeed >= -0.1) {
-      fwdSpeed = -0.1;
-    }
+  if (controls[strRKey]) {
+    strVel += strSpeed;
   }
 
   //Cap rotation and velocity
   //clamp functions. you can mess around with max and min values to make piloting 'feel' better
-
   rotVel = Math.min(Math.max(rotVel, -0.01), 0.01);
-  upVel = Math.min(Math.max(upVel, -0.1), 0.1);
-
+  upVel = Math.min(Math.max(upVel, -0.5), 0.5);
+  strVel = Math.min(Math.max(strVel, -0.5), 0.5);
 
   // add velocities to cube
   cube.rotation.y += rotVel;
   cube.position.y += upVel;
+  cube.translateX(strVel);
 
   //this is to make velocity eventually return to 0. This makes the movement feel a little bit more slippery (you won't stop turning or moving 
   //instantly), but this seems better than just being able to control your motion entirely as it appears more smooth. 
   //For a touhou-like this isn't ideal tho
   rotVel *= 0.95;
   upVel *= 0.95;
+  strVel *= 0.95;
 
   // this code sucks really bad, but if you change rotation and up values 
   // remember to change the multipliers here
@@ -322,6 +341,12 @@ function animate(timestamp) {
    * Bullet & Powerup Stuff
    * 
    */
+  if (Math.floor(Math.random() * 500) === 0) {
+      spawnPowerup(timestamp);
+  }
+
+
+
   powerup_objects.forEach((p, i) => {
         p.update(timeDelta);
         if (p.box.intersectsBox(innerCollisionBox)) {
