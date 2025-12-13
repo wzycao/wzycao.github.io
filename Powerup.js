@@ -19,7 +19,7 @@ class Powerup {
         this.mesh.position.set(position.x, position.y, position.z);
 
         // Light inside cube
-        this.light = new T.PointLight(0x00ffcc, 2000);
+        this.light = new T.PointLight(0x00ffcc, 500);
         this.mesh.add(this.light);              
 
         // Bounding box
@@ -33,7 +33,8 @@ class Powerup {
         // Update bounding box
         this.box.setFromObject(this.mesh);
 
-        
+        // rotate Y slightly 
+        this.mesh.rotation.y += 0.01;
 
         this.time += dt;
         const pulse = Math.abs(Math.sin(this.time));

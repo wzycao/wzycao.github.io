@@ -385,6 +385,8 @@ function animate(timestamp) {
   let timeDelta = 0.001 * (lastTimestamp ? timestamp - lastTimestamp : 0);
   lastTimestamp = timestamp;
 
+  // animate ground object
+  meteorMesh.rotation.y += 0.01 * timeDelta;
   
   
   /**
@@ -484,7 +486,7 @@ function animate(timestamp) {
       spawnPowerup(timestamp);
   }
 
-  if (Math.floor(Math.random() * 500) === 0) {
+  if (Math.floor(Math.random() * 250) === 0) {
       spawnBullet(timestamp);
   }
 
