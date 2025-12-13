@@ -35,9 +35,11 @@ input{
 
 #gameover{
     margin: 0;
-    position: absolute;
-    text-align:center;
-    top:10px;
-    left:10px;
-    color:whitesmoke
+    position: fixed;
+    text-align: center;
+    font-size: 30px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: whitesmoke;
 }

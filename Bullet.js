@@ -6,7 +6,7 @@ class Bullet {
         this.x = position.x;
         this.y = position.y;
         this.z = position.z;
-        this.timer = 500;
+        this.timer = 10;
         
 
         const textureLoader = new T.TextureLoader();
@@ -38,25 +38,20 @@ class Bullet {
         this.speedX = 0;
         this.speedZ = 0;
 
-        this.endX = 0;
-        this.endZ = 0;
+
 
         switch(side) {
             case 0: //+X
                 this.speedX = -0.8;
-                this.endX = -5;
                 break;
             case 1: //-X
                 this.speedX = 0.8;
-                this.endX = 5;
                 break;
             case 2: //+Z
                 this.speedZ = -0.8;
-                this.endZ = -5;
                 break;
             case 3: //-Z
                 this.speedZ = 0.8;
-                this.endZ = 5;
                 break;        
         }
     }
@@ -72,14 +67,10 @@ class Bullet {
         this.box.setFromObject(this.mesh);
 
 
-        // reached target side? delete object
-        if ((this.endX != 0 && this.mesh.position.x == this.endX)  || (this.endZ !=0 && this.mesh.position.z == this.endZ)) {
-            this.finished = true;
-        }
-
         // reached timer? delete object
         this.timer -= dt;
         if (this.timer <= 0) {
+            console.log('Bullet Timeout!');
             this.finished = true;
         }
 

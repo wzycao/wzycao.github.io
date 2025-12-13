@@ -55,7 +55,6 @@ function changeControls() {
 
 window.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
-  console.log(key);
   if (controls.hasOwnProperty(key)) {
     e.preventDefault();
     controls[key] = true;
@@ -98,15 +97,15 @@ scene.add(skybox);
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-//Debugging camera
-const debug_camera = new T.PerspectiveCamera(90);
-debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
+// //Debugging camera
+// const debug_camera = new T.PerspectiveCamera(90);
+// debug_camera.position.set(10, 10, 10);  // place it somewhere sensible
 
-// Add orbit controls for debugging camera
-const debugControls = new OrbitControls(debug_camera, renderer.domElement);
-debugControls.enableDamping = false; 
-debugControls.dampingFactor = 0.05;
-debugControls.target.set(0, 0, 0);
+// // Add orbit controls for debugging camera
+// const debugControls = new OrbitControls(debug_camera, renderer.domElement);
+// debugControls.enableDamping = false; 
+// debugControls.dampingFactor = 0.05;
+// debugControls.target.set(0, 0, 0);
 
 //Main light source 
 const light = new T.HemisphereLight( 0xffe57d, 0x6e6d6a, 1 );
@@ -142,9 +141,9 @@ scene.add(meteorMesh);
 //Fully transparent material we will use later for bounding boxes
 const wireframeMat = new T.MeshStandardMaterial({opacity: 0.0, transparent: true});
 const cube = new T.Mesh( geometry, wireframeMat );
-const axesHelper = new T.AxesHelper(4); 
+// const axesHelper = new T.AxesHelper(4); 
 cube.position.set(0,5,0);
-cube.add(axesHelper);
+// cube.add(axesHelper);
 scene.add( cube );
 cube.add(camera);
 
@@ -277,17 +276,17 @@ let innerCollisionBox = new T.Box3().setFromObject(cube2);
 let outerCollisionBox = new T.Box3();
 
 
-// Debug to show hitboxes
+// // Debug to show hitboxes
 
-let debug = new T.Group();
+// let debug = new T.Group();
 
-let debugBox1 = new T.Box3Helper(innerCollisionBox);
-let debugBox2 = new T.Box3Helper(outerCollisionBox);
+// let debugBox1 = new T.Box3Helper(innerCollisionBox);
+// let debugBox2 = new T.Box3Helper(outerCollisionBox);
 
-debug.add(debugBox1);
-debug.add(debugBox2);
+// debug.add(debugBox1);
+// debug.add(debugBox2);
 
-scene.add(debug);
+// scene.add(debug);
 
 
 //Powerup group
@@ -510,6 +509,7 @@ function animate(timestamp) {
   }
 
   if (Math.random() < timeDelta * 0.09) {
+      console.log('Bullet spawned');
       spawnBullet(timestamp);
   }
 
@@ -537,7 +537,13 @@ function animate(timestamp) {
 
 bullet_objects.forEach((b, i) => {
         b.update(timeDelta);
-        if (b.box.intersectsBox(innerCollisionBox)) {
+
+        if (b.finished) {
+            // Remove bullets that have finished their travel
+            console.log("Bullet Removed!");
+            boolats.remove(b.mesh);
+            bullet_objects.splice(i, 1);
+        } else if (b.box.intersectsBox(innerCollisionBox)) {
             console.log("Hit by bullet:", i);
             
             endGame("You ran into a bullet!");
@@ -547,11 +553,8 @@ bullet_objects.forEach((b, i) => {
             grazeSound.play(0);
             console.log("Grazed by bullet:", i);
             graze += 0.1;
-        } else if (b.finished) {
-            // Remove bullets that have finished their travel
-            boolats.remove(b.mesh);
-            bullet_objects.splice(i, 1);
-        }
+        } 
+        
     });    
   
   pillar_objects.forEach((p, i) => {
