@@ -1,7 +1,7 @@
 import * as T from './libs/CS559-Three/build/three.module.js';
 import { OBJLoader } from './libs/CS559-Three/examples/jsm/loaders/OBJLoader.js';
 import { OrbitControls } from "./libs/CS559-Three/examples/jsm/controls/OrbitControls.js";
-import { Powerup } from './powerup.js';
+import { Powerup } from './Powerup.js';
 import { Bullet } from './Bullet.js';
 import { Pillar } from './Pillar.js';
 
@@ -518,7 +518,7 @@ function animate(timestamp) {
       spawnPillar(timestamp);
   }
 
-  owerup_objects.forEach((p, i) => {
+  powerup_objects.forEach((p, i) => {
         p.update(timeDelta);
         if (p.box.intersectsBox(innerCollisionBox)) {
             console.log("Collected powerup:", i);
