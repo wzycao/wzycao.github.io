@@ -76,9 +76,6 @@ const scene = new T.Scene();
 const camera = new T.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new T.WebGLRenderer();
-const gridHelper = new T.GridHelper(250, 50); // 250 units wide, 50 subdivisions
-
-scene.add(gridHelper);
 
 const textureLoader = new T.TextureLoader();
 const skyboxTexture = textureLoader.load('./objects/SpaceSkybox.png');
@@ -126,6 +123,39 @@ cube.add(camera);
 
 
 camera.position.set(0,3,20);
+
+// create an AudioListener and add it to the camera
+const listener = new T.AudioListener();
+camera.add( listener );
+
+/**
+ * Audio Loading
+ * 
+ */
+const music = new T.Audio( listener );
+const grazeSound = new T.Audio( listener );
+const deathSound = new T.Audio( listener );
+const pickupPowerup = new T.Audio( listener);
+
+const audioLoader = new T.AudioLoader();
+
+audioLoader.load( 'sounds/graze.wav', function( buffer ) {
+	grazeSound.setBuffer( buffer );
+	grazeSound.setLoop( false );
+	grazeSound.setVolume( 0.5 );
+});
+
+audioLoader.load( 'sounds/pldead00.wav', function( buffer ) {
+	deathSound.setBuffer( buffer );
+	deathSound.setLoop( false );
+	deathSound.setVolume( 0.5 );
+});
+
+audioLoader.load( 'sounds/kira01.wav', function( buffer ) {
+	pickupPowerup.setBuffer( buffer );
+	pickupPowerup.setLoop( false );
+	pickupPowerup.setVolume( 0.5 );
+});
 
 
 
@@ -446,6 +476,8 @@ function animate(timestamp) {
             //can add more stuff later
             points++;
 
+            pickupPowerup.play(0);
+
             // Remove from group AND from scene
             powerups.remove(p.mesh);
 
@@ -457,10 +489,12 @@ bullet_objects.forEach((b, i) => {
         b.update(timeDelta);
         if (b.box.intersectsBox(innerCollisionBox)) {
             console.log("Hit by bullet:", i);
+            
             endGame("You ran into a bullet!");
             boolats.remove(b.mesh);
             bullet_objects.splice(i, 1);
         } else if (b.box.intersectsBox(outerCollisionBox)) {
+            grazeSound.play(0);
             console.log("Grazed by bullet:", i);
             graze += 0.1;
         } else if (b.finished) {
@@ -477,10 +511,12 @@ bullet_objects.forEach((b, i) => {
       console.log("Hit by pillar:", i);
       pillars.remove(p.mesh);
       pillar_objects.splice(i, 1);
+      
       endGame("You ran straight into a pillar!");
       
     } else if (p.box.intersectsBox(outerCollisionBox)) {
       console.log("Grazed by pillar:", i);
+      grazeSound.play(0);
       graze += 0.1;
     } 
 
@@ -510,6 +546,8 @@ bullet_objects.forEach((b, i) => {
  * This function will be called whenever a game-ending scenario occurs
  */
 function endGame(message = "Game Over!") {
+    deathSound.play(0);
+    
     document.getElementById('ui').style.display = 'none';
 
     gameEnded = true;
