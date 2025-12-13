@@ -518,7 +518,7 @@ function animate(timestamp) {
       spawnPillar(timestamp);
   }
 
-  powerup_objects.forEach((p, i) => {
+  owerup_objects.forEach((p, i) => {
         p.update(timeDelta);
         if (p.box.intersectsBox(innerCollisionBox)) {
             console.log("Collected powerup:", i);
@@ -557,7 +557,7 @@ bullet_objects.forEach((b, i) => {
         
     });    
   
-  pillar_objects.forEach((p, i) => {
+pillar_objects.forEach((p, i) => {
     p.update(timeDelta);
 
     if (p.box.intersectsBox(innerCollisionBox)) {
