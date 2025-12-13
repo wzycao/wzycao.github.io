@@ -113,13 +113,34 @@ scene.add(light);
 // Anchor point
 const geometry = new T.BoxGeometry( 0.1, 0.1, 0.1 );
 
+//Ground Object
+const texLoad = new T.TextureLoader();
+const meteorText = texLoad.load('./objects/Solarsystemscope_texture_8k_saturn.jpg');
+
+const meteorMat = new T.MeshPhongMaterial({map: meteorText,
+                                          color:0x7a7a7a,
+                                          emissive:0x7a7a7a,
+                                          emissiveIntensity:0.2});
+const meteorGeom = new T.CylinderGeometry(200,200,50);
+const meteorMesh = new T.Mesh(meteorGeom,meteorMat);
+meteorMesh.translateY(-27);
+
+const meteorLight = new T.PointLight(0x7a7a7a,500);
+meteorMesh.add(meteorLight);
+scene.add(meteorMesh);
+
+
 //Fully transparent material we will use later for bounding boxes
 const wireframeMat = new T.MeshStandardMaterial({opacity: 0.0, transparent: true});
 const cube = new T.Mesh( geometry, wireframeMat );
 const axesHelper = new T.AxesHelper(4); 
+cube.position.set(0,5,0);
 cube.add(axesHelper);
 scene.add( cube );
 cube.add(camera);
+
+// Light from player
+cube.add(new T.PointLight(0xffffff, 2.5, 50));
 
 
 camera.position.set(0,3,20);
@@ -450,6 +471,11 @@ function animate(timestamp) {
     endGame("You went out of bounds!");
   }
 
+  // check if you go into the ground
+  if (cube.position.y <= -2) {
+    endGame("You went crashing into the planet!");
+  }
+
   /**
    * Bullet & Powerup Stuff
    * 
@@ -546,8 +572,21 @@ bullet_objects.forEach((b, i) => {
  * This function will be called whenever a game-ending scenario occurs
  */
 function endGame(message = "Game Over!") {
+
     deathSound.play(0);
-    
+    //Put transparent black quad right in front of screen to simulate fade-out
+    let fadeScreen = document.createElement("div");
+    fadeScreen.style.position = "fixed";
+    fadeScreen.style.top = "0";
+    fadeScreen.style.left = "0";
+    fadeScreen.style.width = "100%";
+    fadeScreen.style.height = "100%";
+    fadeScreen.style.backgroundColor = "black";
+    fadeScreen.style.opacity = "0.25";
+    fadeScreen.style.zIndex = "9999";
+    //add fadeScreen to div after gameover text so it is behind text
+    document.body.appendChild(fadeScreen);
+
     document.getElementById('ui').style.display = 'none';
 
     gameEnded = true;
@@ -555,8 +594,8 @@ function endGame(message = "Game Over!") {
     document.getElementById('gameovertext').textContent = message;
 
     //Calculate score
-    //100% points + 25% graze
-    let score = Math.floor(points + (graze * 0.5)); 
+    //100% points + 50% graze
+    score = Math.floor(points + (graze * 0.5)); 
     document.getElementById('score').textContent = score
 }
 

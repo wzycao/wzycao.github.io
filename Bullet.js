@@ -25,7 +25,7 @@ class Bullet {
         this.mesh.position.set(position.x, position.y, position.z);
 
         // Light inside cube
-        this.light = new T.PointLight(0x00ffcc, 10);
+        this.light = new T.PointLight(0xff2626, 2000);
         this.mesh.add(this.light);              
 
         // Bounding box

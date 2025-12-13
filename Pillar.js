@@ -18,12 +18,14 @@ class Pillar {
         this.mesh = new T.Mesh(geo, mat);
         this.mesh.position.set(position.x, position.y, position.z);
 
-        this.light = new T.PointLight(0x8b4513, 20);
+        this.light = new T.PointLight(0x8b4513, 10000,20);
         this.mesh.add(this.light);
         
         this.mesh.translateY(50); // Raise pillar so it sits on the ground
 
-        this.box = new T.Box3().setFromObject(this.mesh);
+        // Set bounding box as nothing to begin with so we can't instantly 
+        // collide with it 
+        this.box = new T.Box3(new T.Vector3(), new T.Vector3());
         this.flickerDuration = flickerDuration;
         this.startTime = Date.now();
         this.finished = false;

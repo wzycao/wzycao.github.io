@@ -19,7 +19,7 @@ class Powerup {
         this.mesh.position.set(position.x, position.y, position.z);
 
         // Light inside cube
-        this.light = new T.PointLight(0x00ffcc, 3);
+        this.light = new T.PointLight(0x00ffcc, 2000);
         this.mesh.add(this.light);              
 
         // Bounding box
