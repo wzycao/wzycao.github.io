@@ -6,13 +6,18 @@ class Bullet {
         this.x = position.x;
         this.y = position.y;
         this.z = position.z;
+        this.timer = 500;
+        
 
+        const textureLoader = new T.TextureLoader();
+        const bulletTexture = textureLoader.load('./objects/basic_texture.png');
 
         // Cube Mesh
-        const geo = new T.SphereGeometry(4);
+        const geo = new T.SphereGeometry(5);
         const mat = new T.MeshStandardMaterial({
-            color: 0xfc0303,
-            emissive: 0xfc0303,
+            map: bulletTexture,
+            color: 0xffffff,
+            emissive: 0xff2626,
             emissiveIntensity: 1.3
         });
 
@@ -20,7 +25,7 @@ class Bullet {
         this.mesh.position.set(position.x, position.y, position.z);
 
         // Light inside cube
-        this.light = new T.PointLight(0x00ffcc, 3, 10);
+        this.light = new T.PointLight(0x00ffcc, 10);
         this.mesh.add(this.light);              
 
         // Bounding box
@@ -38,19 +43,19 @@ class Bullet {
 
         switch(side) {
             case 0: //+X
-                this.speedX = -0.1;
+                this.speedX = -0.8;
                 this.endX = -5;
                 break;
             case 1: //-X
-                this.speedX = 0.1;
+                this.speedX = 0.8;
                 this.endX = 5;
                 break;
             case 2: //+Z
-                this.speedZ = -0.1;
+                this.speedZ = -0.8;
                 this.endZ = -5;
                 break;
             case 3: //-Z
-                this.speedZ = 0.1;
+                this.speedZ = 0.8;
                 this.endZ = 5;
                 break;        
         }
@@ -67,12 +72,16 @@ class Bullet {
         this.box.setFromObject(this.mesh);
 
 
-        //reached target side? delete object
+        // reached target side? delete object
         if ((this.endX != 0 && this.mesh.position.x == this.endX)  || (this.endZ !=0 && this.mesh.position.z == this.endZ)) {
             this.finished = true;
         }
 
-        //replace with timer?
+        // reached timer? delete object
+        this.timer -= dt;
+        if (this.timer <= 0) {
+            this.finished = true;
+        }
 
         this.time += dt;
         const pulse = (Math.sin(this.time * 3) + 1) * 0.5;

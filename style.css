@@ -32,3 +32,12 @@ input{
     top:10px;
     left:10px;
 }
+
+#gameover{
+    margin: 0;
+    position: absolute;
+    text-align:center;
+    top:10px;
+    left:10px;
+    color:whitesmoke
+}

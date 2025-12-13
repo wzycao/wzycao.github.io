@@ -10,7 +10,7 @@ class Pillar {
         const mat = new T.MeshStandardMaterial({
             color: 0xfc0303,
             emissive: 0xfc0303,
-            emissiveIntensity: 0,
+            emissiveIntensity: 1.0,
             transparent: true,
             opacity: 0.5
         });
@@ -18,7 +18,7 @@ class Pillar {
         this.mesh = new T.Mesh(geo, mat);
         this.mesh.position.set(position.x, position.y, position.z);
 
-        this.light = new T.PointLight(0x8b4513, 5, 10);
+        this.light = new T.PointLight(0x8b4513, 20);
         this.mesh.add(this.light);
         
         this.mesh.translateY(50); // Raise pillar so it sits on the ground

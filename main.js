@@ -15,6 +15,7 @@ let optionsMenu = false;
 document.getElementById('controls-menu').style.display = 'none';
 document.getElementById('ui').style.display = 'none';
 document.getElementById('info-menu').style.display = 'none';
+document.getElementById('gameover').style.display = 'none';
 
 let upKey = "w";
 let downKey = "s";
@@ -75,9 +76,18 @@ const scene = new T.Scene();
 const camera = new T.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new T.WebGLRenderer();
-scene.fog = new T.Fog(0x87ceeb, 1, 500);
 const gridHelper = new T.GridHelper(250, 50); // 250 units wide, 50 subdivisions
+
 scene.add(gridHelper);
+
+const textureLoader = new T.TextureLoader();
+const skyboxTexture = textureLoader.load('./objects/SpaceSkybox.png');
+const skyboxGeometry = new T.SphereGeometry(500, 32, 32);
+const skyboxMaterial = new T.MeshBasicMaterial({ map: skyboxTexture, side: T.BackSide, 
+  color:0x303030});
+const skybox = new T.Mesh(skyboxGeometry, skyboxMaterial);
+
+scene.add(skybox);
 
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
@@ -115,7 +125,7 @@ scene.add( cube );
 cube.add(camera);
 
 
-camera.position.set(0,3,15);
+camera.position.set(0,3,20);
 
 
 
@@ -170,7 +180,7 @@ cube1.position.set(0,10,0);
 main_man.add(cube1);
 
 //Bounding Box 2 (Inner)
-const geometry2 = new T.BoxGeometry( 5, 15, 4.5 );
+const geometry2 = new T.BoxGeometry( 1, 15, 1 );
 const cube2 = new T.Mesh( geometry2, wireframeMat );
 cube1.add(cube2);
 
@@ -179,6 +189,8 @@ cube1.add(cube2);
  * Variables for main loop
  * 
  */
+//Control Variables
+let gameEnded = false; 
 
 //Player Variables
 let rotVel = 0;
@@ -191,7 +203,7 @@ let charRotY = 0;
 let rotSpeed = 0.001;
 let upSpeed = 0.015;
 let strSpeed = 0.015;
-let fwdSpeed = -0.35;
+let fwdSpeed = -0.25;
 let dispSpeed = 0;
 
 //Score Variables
@@ -298,9 +310,9 @@ function spawnBullet(time) {
 
   // Function to spawn pillars
   function spawnPillar(time) {
-      const x = Math.sin(time * 1000) * 125;
+      const x = Math.sin(time * 1234) * 125;
       const y = 0; // Ground level
-      const z = Math.cos(time * 1000) * 125;
+      const z = Math.cos(time * 10) * 125;
 
       const pillar = new Pillar({x, y, z});
 
@@ -357,9 +369,11 @@ function animate(timestamp) {
 
   //Cap rotation and velocity
   //clamp functions. you can mess around with max and min values to make piloting 'feel' better
-  rotVel = Math.min(Math.max(rotVel, -0.01), 0.01);
-  upVel = Math.min(Math.max(upVel, -0.5), 0.5);
-  strVel = Math.min(Math.max(strVel, -0.5), 0.5);
+  let maxSpeed = -fwdSpeed;
+  let minSpeed = fwdSpeed;
+  rotVel = Math.min(Math.max(rotVel, -0.03), 0.03);
+  upVel = Math.min(Math.max(upVel, minSpeed), maxSpeed);
+  strVel = Math.min(Math.max(strVel, minSpeed), maxSpeed);
 
   // add velocities to cube
   cube.rotation.y += rotVel;
@@ -384,16 +398,27 @@ function animate(timestamp) {
   cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ);
 
 
-  // if (controls[slowKey]) {
-  //   cube.translateZ(-0.75);
-  // } else {
-  //   // comment out translateZ here for debug
-  //   cube.translateZ(fwdSpeed);
-  // }
+  //Makes the player always moving forward
+  //Can comment out for debugging
+  if (controls[slowKey]) {
+    cube.translateZ(0.3*fwdSpeed);
+  } else {
+    
+    cube.translateZ(fwdSpeed);
+  }
+
+  //Slowly speed up over time
+  fwdSpeed -= 0.0001;
   
   //Update collision boxes for main character
   innerCollisionBox.setFromObject(cube2);
   outerCollisionBox.setFromObject(cube1);
+
+  //Check if you go out of bounds
+  if (Math.abs(cube.position.x) >= 250 || Math.abs(cube.position.z) >= 250
+  || cube.position.y >= 200) {
+    endGame("You went out of bounds!");
+  }
 
   /**
    * Bullet & Powerup Stuff
@@ -432,11 +457,12 @@ bullet_objects.forEach((b, i) => {
         b.update(timeDelta);
         if (b.box.intersectsBox(innerCollisionBox)) {
             console.log("Hit by bullet:", i);
+            endGame("You ran into a bullet!");
             boolats.remove(b.mesh);
             bullet_objects.splice(i, 1);
         } else if (b.box.intersectsBox(outerCollisionBox)) {
             console.log("Grazed by bullet:", i);
-            graze += 0.001;
+            graze += 0.1;
         } else if (b.finished) {
             // Remove bullets that have finished their travel
             boolats.remove(b.mesh);
@@ -446,14 +472,18 @@ bullet_objects.forEach((b, i) => {
   
   pillar_objects.forEach((p, i) => {
     p.update(timeDelta);
-    if (p.box.intersectsBox(outerCollisionBox)) {
-      console.log("Grazed by pillar:", i);
-      graze += 0.001;
-    } else if (p.box.intersectsBox(innerCollisionBox)) {
+
+    if (p.box.intersectsBox(innerCollisionBox)) {
       console.log("Hit by pillar:", i);
       pillars.remove(p.mesh);
       pillar_objects.splice(i, 1);
-    }
+      endGame("You ran straight into a pillar!");
+      
+    } else if (p.box.intersectsBox(outerCollisionBox)) {
+      console.log("Grazed by pillar:", i);
+      graze += 0.1;
+    } 
+
   });
 
 
@@ -464,17 +494,33 @@ bullet_objects.forEach((b, i) => {
 
   speedUI.textContent = dispSpeed;
   pointsUI.textContent = points;
-  grazeUI.textContent = graze;
+  grazeUI.textContent = Math.floor(graze);
 
-
-  //Replace camera with debug_camera for debugging
-  renderer.render(scene, debug_camera);
-  requestAnimationFrame(animate);
+  if (!gameEnded) {
+    //Replace camera with debug_camera for debugging
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
 }
 
 // place requestAnimationFrame(animate); here for easy debug (graphics will always be showing)
-requestAnimationFrame(animate);
+// requestAnimationFrame(animate);
 
+/**
+ * This function will be called whenever a game-ending scenario occurs
+ */
+function endGame(message = "Game Over!") {
+    document.getElementById('ui').style.display = 'none';
+
+    gameEnded = true;
+    document.getElementById('gameover').style.display = 'inline-flex';
+    document.getElementById('gameovertext').textContent = message;
+
+    //Calculate score
+    //100% points + 25% graze
+    let score = Math.floor(points + (graze * 0.5)); 
+    document.getElementById('score').textContent = score
+}
 
 /**
  * Main menu buttons
