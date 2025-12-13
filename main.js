@@ -26,6 +26,7 @@ let strLKey = "q";
 let strRKey = "e";
 
 let slowKey = "shift";
+let altKey = "alt";
 
 /**
  * Display variables
@@ -43,7 +44,8 @@ const controls = {
   q: false,
   e: false,
 
-  shift: false
+  shift: false,
+  alt: false
 };
 
 // do later :)
@@ -53,13 +55,20 @@ function changeControls() {
 
 window.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
-  if (controls.hasOwnProperty(key))
-  controls[key] = true;
+  console.log(key);
+  if (controls.hasOwnProperty(key)) {
+    e.preventDefault();
+    controls[key] = true;
+  }
+  
 });
 window.addEventListener("keyup", (e) => {
   const key = e.key.toLowerCase();
-  if (controls.hasOwnProperty(key))
-  controls[key] = false;
+  if (controls.hasOwnProperty(key)) {
+    e.preventDefault();
+    controls[key] = false;
+  }
+  
 });
 
 
@@ -73,13 +82,13 @@ const scene = new T.Scene();
 
 
 
-const camera = new T.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new T.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1500 );
 
 const renderer = new T.WebGLRenderer();
 
 const textureLoader = new T.TextureLoader();
 const skyboxTexture = textureLoader.load('./objects/SpaceSkybox.png');
-const skyboxGeometry = new T.SphereGeometry(500, 32, 32);
+const skyboxGeometry = new T.SphereGeometry(900, 32, 32);
 const skyboxMaterial = new T.MeshBasicMaterial({ map: skyboxTexture, side: T.BackSide, 
   color:0x303030});
 const skybox = new T.Mesh(skyboxGeometry, skyboxMaterial);
@@ -145,40 +154,6 @@ cube.add(new T.PointLight(0xffffff, 2.5, 50));
 
 camera.position.set(0,3,20);
 
-// create an AudioListener and add it to the camera
-const listener = new T.AudioListener();
-camera.add( listener );
-
-/**
- * Audio Loading
- * 
- */
-const music = new T.Audio( listener );
-const grazeSound = new T.Audio( listener );
-const deathSound = new T.Audio( listener );
-const pickupPowerup = new T.Audio( listener);
-
-const audioLoader = new T.AudioLoader();
-
-audioLoader.load( 'sounds/graze.wav', function( buffer ) {
-	grazeSound.setBuffer( buffer );
-	grazeSound.setLoop( false );
-	grazeSound.setVolume( 0.5 );
-});
-
-audioLoader.load( 'sounds/pldead00.wav', function( buffer ) {
-	deathSound.setBuffer( buffer );
-	deathSound.setLoop( false );
-	deathSound.setVolume( 0.5 );
-});
-
-audioLoader.load( 'sounds/kira01.wav', function( buffer ) {
-	pickupPowerup.setBuffer( buffer );
-	pickupPowerup.setLoop( false );
-	pickupPowerup.setVolume( 0.5 );
-});
-
-
 
 /**
  * Main Character
@@ -224,16 +199,51 @@ bow.position.set(0,20,-1.5);
 main_man.add(bow);
 
 
-//Bounding Box 1 (Outer)
-const geometry1 = new T.BoxGeometry( 35, 35, 15 );
-const cube1 = new T.Mesh( geometry1, wireframeMat );
-cube1.position.set(0,10,0);
-main_man.add(cube1);
-
 //Bounding Box 2 (Inner)
-const geometry2 = new T.BoxGeometry( 1, 15, 1 );
+const geometry2 = new T.BoxGeometry( 2, 15, 1.5 );
 const cube2 = new T.Mesh( geometry2, wireframeMat );
-cube1.add(cube2);
+cube2.position.set(0,10,0);
+main_man.add(cube2);
+
+
+// create an AudioListener and add it to the camera
+const listener = new T.AudioListener();
+camera.add( listener );
+
+/**
+ * Audio Loading
+ * 
+ */
+const music = new T.Audio( listener );
+const grazeSound = new T.Audio( listener );
+const deathSound = new T.Audio( listener );
+const pickupPowerup = new T.Audio( listener);
+
+const audioLoader = new T.AudioLoader();
+
+audioLoader.load( 'sounds/graze.wav', function( buffer ) {
+	grazeSound.setBuffer( buffer );
+	grazeSound.setLoop( false );
+	grazeSound.setVolume( 0.5 );
+});
+
+audioLoader.load( 'sounds/pldead00.wav', function( buffer ) {
+	deathSound.setBuffer( buffer );
+	deathSound.setLoop( false );
+	deathSound.setVolume( 0.5 );
+});
+
+audioLoader.load( 'sounds/kira01.wav', function( buffer ) {
+	pickupPowerup.setBuffer( buffer );
+	pickupPowerup.setLoop( false );
+	pickupPowerup.setVolume( 0.5 );
+});
+
+audioLoader.load( 'sounds/A Soul as Red as a Ground Cherry.mp3', function( buffer ) {
+	music.setBuffer( buffer );
+	music.setLoop( true );
+	music.setVolume( 0.125 );
+});
 
 
 /**
@@ -254,7 +264,7 @@ let charRotY = 0;
 let rotSpeed = 0.001;
 let upSpeed = 0.015;
 let strSpeed = 0.015;
-let fwdSpeed = -0.25;
+let fwdSpeed = -0.1;
 let dispSpeed = 0;
 
 //Score Variables
@@ -264,7 +274,7 @@ let score = 0;
 
 //Doing this method of setting boxes creates a best-guess instead of a perfectly aligned box, which works for now
 let innerCollisionBox = new T.Box3().setFromObject(cube2);
-let outerCollisionBox = new T.Box3().setFromObject(cube1);
+let outerCollisionBox = new T.Box3();
 
 
 // Debug to show hitboxes
@@ -293,6 +303,7 @@ scene.add(pillars);
 scene.add(powerups);
 scene.add(boolats);
 
+//Add some powerups to begin with
 let p1 = new Powerup({ x: 40, y: 15, z: 0 });
 let p2 = new Powerup({ x: -20, y: 1, z: 15 });
 
@@ -333,20 +344,20 @@ function spawnBullet(time) {
     y = Math.abs(Math.random() * 100); //random Y between 0 and 100
     switch(side) {
         case 0: // +X side
-            x = 125;
-            z = (Math.random() - 0.5) * 250;
+            x = 150;
+            z = (Math.random() - 0.5) * 300;
             break;
         case 1: // -X side
-            x = -125;
-            z = (Math.random() - 0.5) * 250;
+            x = -150;
+            z = (Math.random() - 0.5) * 300;
             break;
         case 2: // +Z side
-            z = 125;
-            x = (Math.random() - 0.5) * 250;
+            z = 150;
+            x = (Math.random() - 0.5) * 300;
             break;
         case 3: // -Z side
-            z = -125;
-            x = (Math.random() - 0.5) * 250;
+            z = -150;
+            x = (Math.random() - 0.5) * 300;
             break;
     } 
 
@@ -385,10 +396,20 @@ function animate(timestamp) {
   let timeDelta = 0.001 * (lastTimestamp ? timestamp - lastTimestamp : 0);
   lastTimestamp = timestamp;
 
-  // animate ground object
+  // animate background objects
   meteorMesh.rotation.y += 0.01 * timeDelta;
+  skybox.rotation.z += 0.01 * timeDelta;
+  skybox.rotation.x += 0.01 * timeDelta;
   
-  
+  // Rotate camera 180 degrees if alt key is pressed
+  if (controls[altKey]) {
+    camera.position.set(0,3,-20);
+    camera.rotation.y = Math.PI;
+  } else {
+    camera.position.set(0,3,20);
+    camera.rotation.y = 0;
+  }
+
   /**
    * Main character stuff
    * 
@@ -448,7 +469,6 @@ function animate(timestamp) {
   charRotZ = 10*rotVel;
   //The intial values were calculated from guess-and-checking the model to see what rotation looked good
   main_man.rotation.set(1.75 + charRotX,0 + charRotY,3.13 - charRotZ );
-  cube1.rotation.set( -0.25*charRotX,0.5*charRotY,2*charRotZ);
 
 
   //Makes the player always moving forward
@@ -461,16 +481,17 @@ function animate(timestamp) {
   }
 
   //Slowly speed up over time
-  fwdSpeed -= 0.0001;
+  fwdSpeed -= (0.005 * timeDelta);
   
   //Update collision boxes for main character
   innerCollisionBox.setFromObject(cube2);
-  outerCollisionBox.setFromObject(cube1);
+  outerCollisionBox.setFromObject(main_man);
+  outerCollisionBox.expandByScalar(2.5);
 
   //Check if you go out of bounds
-  if (Math.abs(cube.position.x) >= 250 || Math.abs(cube.position.z) >= 250
+  if (Math.abs(cube.position.x) >= 300 || Math.abs(cube.position.z) >= 300
   || cube.position.y >= 200) {
-    endGame("You went out of bounds!");
+    endGame("You went flying into the distant stars!");
   }
 
   // check if you go into the ground
@@ -482,16 +503,17 @@ function animate(timestamp) {
    * Bullet & Powerup Stuff
    * 
    */
-  if (Math.floor(Math.random() * 500) === 0) {
+
+  // Make sure these spawn rates are based on delta time so computer tickrate does not impact them (more lag)
+  if (Math.random() < timeDelta * 0.09) {
       spawnPowerup(timestamp);
   }
 
-  if (Math.floor(Math.random() * 250) === 0) {
+  if (Math.random() < timeDelta * 0.09) {
       spawnBullet(timestamp);
   }
 
-   
-  if (Math.floor(Math.random() * 500) === 0) {
+  if (Math.random() < timeDelta * 0.06) {
       console.log("Pillar spawned");
       spawnPillar(timestamp);
   }
@@ -574,7 +596,7 @@ bullet_objects.forEach((b, i) => {
  * This function will be called whenever a game-ending scenario occurs
  */
 function endGame(message = "Game Over!") {
-
+    music.stop();
     deathSound.play(0);
     //Put transparent black quad right in front of screen to simulate fade-out
     let fadeScreen = document.createElement("div");
@@ -611,6 +633,7 @@ document.getElementById('start').addEventListener('click', () => {
             requestAnimationFrame(animate);
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('ui').style.display = 'inline-flex';
+            music.play();
             sceneActive = true;
         }
 });
