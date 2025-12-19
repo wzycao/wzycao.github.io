@@ -405,7 +405,7 @@ function proto_initialize() {
   prototype = true;
   meteorGeom = new T.CylinderGeometry(900,900,50);
   meteorMesh.geometry = meteorGeom;
-  outofBounds = 900;
+  outofBounds = 300;
 
   //replace complex models with simple ones
   main_man.remove(bow);
@@ -415,9 +415,9 @@ function proto_initialize() {
   cube.add(simpleCube);
    
   //randomly generate pillars in the area, but not in 150x150 center
-  for (let i = 0; i < 50; i++) {
-    let x = (Math.random() - 0.5) * 1000;
-    let z = (Math.random() - 0.5) * 1000;
+  for (let i = 0; i < 20; i++) {
+    let x = (Math.random() - 0.5) * 500;
+    let z = (Math.random() - 0.5) * 500;
     if (Math.abs(x) < 150 && Math.abs(z) < 150) {
       //skip pillar spawn
       i--;
@@ -429,9 +429,9 @@ function proto_initialize() {
   }
 
   // same thing for powerups
-  for (let i = 0; i < 30; i++) {
-    let x = (Math.random() - 0.5) * 1000;
-    let z = (Math.random() - 0.5) * 1000;
+  for (let i = 0; i < 20; i++) {
+    let x = (Math.random() - 0.5) * 500;
+    let z = (Math.random() - 0.5) * 500;
     let y = Math.abs(Math.random() * 200);    
     if (Math.abs(x) < 150 && Math.abs(z) < 150) {
       //skip powerup spawn
