@@ -12,6 +12,8 @@ import { Pillar } from './Pillar.js';
 
 let sceneActive = false;
 let optionsMenu = false;
+
+
 document.getElementById('controls-menu').style.display = 'none';
 document.getElementById('ui').style.display = 'none';
 document.getElementById('info-menu').style.display = 'none';
@@ -123,13 +125,26 @@ const geometry = new T.BoxGeometry( 0.1, 0.1, 0.1 );
 
 //Ground Object
 const texLoad = new T.TextureLoader();
-const meteorText = texLoad.load('./objects/Solarsystemscope_texture_8k_saturn.jpg');
+let meteorText;
+let meteorMat;
 
-const meteorMat = new T.MeshPhongMaterial({map: meteorText,
+let prototype = false; 
+if (!prototype) {
+  meteorText = texLoad.load('./objects/Solarsystemscope_texture_8k_saturn.jpg');
+  meteorMat = new T.MeshPhongMaterial({map: meteorText,
                                           color:0x7a7a7a,
                                           emissive:0x7a7a7a,
                                           emissiveIntensity:0.2});
-const meteorGeom = new T.CylinderGeometry(200,200,50);
+} else {
+  meteorMat = new T.MeshPhongMaterial({
+                                          color:0x7a7a7a,
+                                          emissive:0x7a7a7a,
+                                          emissiveIntensity:0.2});
+}
+
+
+
+let meteorGeom = new T.CylinderGeometry(200,200,50);
 const meteorMesh = new T.Mesh(meteorGeom,meteorMat);
 meteorMesh.translateY(-27);
 
@@ -148,7 +163,8 @@ scene.add( cube );
 cube.add(camera);
 
 // Light from player
-cube.add(new T.PointLight(0xffffff, 2.5, 50));
+let pointLight = new T.PointLight(0xffffff, 2.5, 50)
+cube.add(pointLight);
 
 
 camera.position.set(0,3,20);
@@ -158,6 +174,7 @@ camera.position.set(0,3,20);
  * Main Character
  * 
  */
+
 let loader = new OBJLoader();
 
 let manMat = new T.MeshPhongMaterial({
@@ -251,6 +268,7 @@ audioLoader.load( 'sounds/A Soul as Red as a Ground Cherry.mp3', function( buffe
  */
 //Control Variables
 let gameEnded = false; 
+let outofBounds = 300;
 
 //Player Variables
 let rotVel = 0;
@@ -270,6 +288,7 @@ let dispSpeed = 0;
 let graze = 0;
 let points = 0;
 let score = 0;
+
 
 //Doing this method of setting boxes creates a best-guess instead of a perfectly aligned box, which works for now
 let innerCollisionBox = new T.Box3().setFromObject(cube2);
@@ -302,16 +321,9 @@ scene.add(pillars);
 scene.add(powerups);
 scene.add(boolats);
 
-//Add some powerups to begin with
-let p1 = new Powerup({ x: 40, y: 15, z: 0 });
-let p2 = new Powerup({ x: -20, y: 1, z: 15 });
-
-// Add them to the group
-powerups.add(p1.mesh);
-powerups.add(p2.mesh);
 
 // Also store references so you can update them
-let powerup_objects = [p1, p2];
+let powerup_objects = [];
 let bullet_objects = [];
 let pillar_objects = [];
 
@@ -388,17 +400,63 @@ function spawnBullet(time) {
  * 
  */
 let lastTimestamp; // undefined to start
+let simpleCube = new T.Mesh(new T.BoxGeometry(4,4,4), new T.MeshStandardMaterial({color:0xffdead}))
+function proto_initialize() {
+  prototype = true;
+  meteorGeom = new T.CylinderGeometry(900,900,50);
+  meteorMesh.geometry = meteorGeom;
+  outofBounds = 900;
+
+  //replace complex models with simple ones
+  main_man.remove(bow);
+  cube.remove(main_man);
+  cube.remove(pointLight);
+  
+  cube.add(simpleCube);
+   
+  //randomly generate pillars in the area, but not in 150x150 center
+  for (let i = 0; i < 50; i++) {
+    let x = (Math.random() - 0.5) * 1000;
+    let z = (Math.random() - 0.5) * 1000;
+    if (Math.abs(x) < 150 && Math.abs(z) < 150) {
+      //skip pillar spawn
+      i--;
+      continue;
+    }
+    let pillar = new Pillar({x, y:0, z}, 1, true);
+    pillars.add(pillar.mesh);
+    pillar_objects.push(pillar);
+  }
+
+  // same thing for powerups
+  for (let i = 0; i < 30; i++) {
+    let x = (Math.random() - 0.5) * 1000;
+    let z = (Math.random() - 0.5) * 1000;
+    let y = Math.abs(Math.random() * 200);    
+    if (Math.abs(x) < 150 && Math.abs(z) < 150) {
+      //skip powerup spawn
+      i--;
+      continue;
+    } 
+    let powerup = new Powerup({x, y, z}, true);
+    powerups.add(powerup.mesh);
+    powerup_objects.push(powerup);
+  }
+
+}
 
 function animate(timestamp) {
-
   // Convert time change from milliseconds to seconds
   let timeDelta = 0.001 * (lastTimestamp ? timestamp - lastTimestamp : 0);
   lastTimestamp = timestamp;
 
+
   // animate background objects
-  meteorMesh.rotation.y += 0.01 * timeDelta;
-  skybox.rotation.z += 0.01 * timeDelta;
-  skybox.rotation.x += 0.01 * timeDelta;
+  if (!prototype) {
+    meteorMesh.rotation.y += 0.01 * timeDelta;
+    skybox.rotation.z += 0.01 * timeDelta;
+    skybox.rotation.x += 0.01 * timeDelta;
+  }
   
   // Rotate camera 180 degrees if alt key is pressed
   if (controls[altKey]) {
@@ -462,13 +520,14 @@ function animate(timestamp) {
 
   // this code sucks really bad, but if you change rotation and up values 
   // remember to change the multipliers here
+  if (!prototype) {
+    charRotX = 2*upVel;
+    charRotY = 50*rotVel;
+    charRotZ = 10*rotVel;
+    //The intial values were calculated from guess-and-checking the model to see what rotation looked good
+    main_man.rotation.set(1.75 + charRotX,0 + charRotY,3.13 - charRotZ );
+  }
   
-  charRotX = 2*upVel;
-  charRotY = 50*rotVel;
-  charRotZ = 10*rotVel;
-  //The intial values were calculated from guess-and-checking the model to see what rotation looked good
-  main_man.rotation.set(1.75 + charRotX,0 + charRotY,3.13 - charRotZ );
-
 
   //Makes the player always moving forward
   //Can comment out for debugging
@@ -483,13 +542,20 @@ function animate(timestamp) {
   fwdSpeed -= (0.005 * timeDelta);
   
   //Update collision boxes for main character
-  innerCollisionBox.setFromObject(cube2);
-  outerCollisionBox.setFromObject(main_man);
-  outerCollisionBox.expandByScalar(2.5);
+  if(prototype) {
+    outerCollisionBox.setFromObject(simpleCube);
+    outerCollisionBox.expandByScalar(5);
+    innerCollisionBox.setFromObject(simpleCube);
+  } else {
+    innerCollisionBox.setFromObject(cube2);
+    outerCollisionBox.setFromObject(main_man);
+    outerCollisionBox.expandByScalar(2.5);
+  }
+  
 
   //Check if you go out of bounds
-  if (Math.abs(cube.position.x) >= 300 || Math.abs(cube.position.z) >= 300
-  || cube.position.y >= 200) {
+  if (Math.abs(cube.position.x) >= outofBounds || Math.abs(cube.position.z) >= outofBounds
+  || cube.position.y >= 250) {
     endGame("You went flying into the distant stars!");
   }
 
@@ -504,20 +570,22 @@ function animate(timestamp) {
    */
 
   // Make sure these spawn rates are based on delta time so computer tickrate does not impact them (more lag)
-  if (Math.random() < timeDelta * 0.09) {
+  if (!prototype) {
+     if (Math.random() < timeDelta * 0.09) {
       spawnPowerup(timestamp);
-  }
+    }
 
-  if (Math.random() < timeDelta * 0.09) {
+    if (Math.random() < timeDelta * 0.09) {
       console.log('Bullet spawned');
       spawnBullet(timestamp);
-  }
+    }
 
-  if (Math.random() < timeDelta * 0.06) {
+    if (Math.random() < timeDelta * 0.06) {
       console.log("Pillar spawned");
       spawnPillar(timestamp);
+    }
   }
-
+ 
   powerup_objects.forEach((p, i) => {
         p.update(timeDelta);
         if (p.box.intersectsBox(innerCollisionBox)) {
@@ -537,7 +605,6 @@ function animate(timestamp) {
 
 bullet_objects.forEach((b, i) => {
         b.update(timeDelta);
-
         if (b.finished) {
             // Remove bullets that have finished their travel
             console.log("Bullet Removed!");
@@ -630,9 +697,19 @@ function endGame(message = "Game Over!") {
  * Main menu buttons
  * 
  */
-
 document.getElementById('start').addEventListener('click', () => {
         if (!sceneActive) {
+            requestAnimationFrame(animate);
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('ui').style.display = 'inline-flex';
+            music.play();
+            sceneActive = true;
+        }
+});
+
+document.getElementById('proto-start').addEventListener('click', () => {
+        if (!sceneActive) {
+            proto_initialize();
             requestAnimationFrame(animate);
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('ui').style.display = 'inline-flex';
