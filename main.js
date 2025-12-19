@@ -153,6 +153,169 @@ meteorMesh.add(meteorLight);
 scene.add(meteorMesh);
 
 
+
+function createTouhouGroundSet() {
+  const toriiMat = new T.MeshStandardMaterial({
+    color: 0xa32020,
+    emissive: 0x360707,
+    roughness: 0.35
+  });
+
+  const postGeo = new T.BoxGeometry(2, 25, 2);
+  const crossGeo = new T.BoxGeometry(14, 2.5, 2.2);
+
+  const leftPost = new T.Mesh(postGeo, toriiMat);
+  leftPost.position.set(-5, 12, 0);
+  const rightPost = leftPost.clone();
+  rightPost.position.x = 5;
+
+  const topBeam = new T.Mesh(crossGeo, toriiMat);
+  topBeam.position.set(0, 24, 0);
+  const lintel = new T.Mesh(new T.BoxGeometry(16, 1.2, 2.5), toriiMat);
+  lintel.position.set(0, 26, 0.2);
+
+  const charmMat = new T.MeshStandardMaterial({
+    color: 0xf7e6b5,
+    emissive: 0xe0c070,
+    emissiveIntensity: 0.5,
+    transparent: true,
+    opacity: 0.9
+  });
+  const charmGeo = new T.PlaneGeometry(1.2, 2.8);
+  const charm = new T.Mesh(charmGeo, charmMat);
+  charm.rotation.y = Math.PI / 2;
+  charm.position.set(0, 18, 0.25);
+
+  const shrineBase = new T.Mesh(
+    new T.BoxGeometry(12, 4, 10),
+    new T.MeshPhongMaterial({ color: 0x443536, emissive: 0x1a0f10, emissiveIntensity: 0.3 })
+  );
+  shrineBase.position.set(0, 2, -10);
+
+  const shrineRoof = new T.Mesh(
+    new T.ConeGeometry(10, 4, 4),
+    new T.MeshPhongMaterial({ color: 0x2c3e6c, emissive: 0x111b30, shininess: 60 })
+  );
+  shrineRoof.rotation.y = Math.PI / 4;
+  shrineRoof.position.set(0, 6.5, -10);
+
+  const lanternGeo = new T.CylinderGeometry(1.2, 1.2, 4, 12);
+  const lanternMat = new T.MeshStandardMaterial({
+    color: 0xfff2d3,
+    emissive: 0xffc477,
+    emissiveIntensity: 1.2
+  });
+
+  function buildLantern(x, z) {
+    const lantern = new T.Mesh(lanternGeo, lanternMat);
+    lantern.position.set(x, 2, z);
+    const light = new T.PointLight(0xffc477, 40, 25);
+    light.position.set(0, 2, 0);
+    lantern.add(light);
+    groundDecor.add(lantern);
+  }
+
+  buildLantern(-8, -5);
+  buildLantern(8, -5);
+
+  function spawnOrb(angle, radius) {
+    const orb = new T.Mesh(
+      new T.SphereGeometry(1.3, 16, 16),
+      new T.MeshStandardMaterial({
+        color: 0xb5d9ff,
+        emissive: 0x66aaff,
+        emissiveIntensity: 1.3,
+        transparent: true,
+        opacity: 0.75
+      })
+    );
+    orb.position.set(Math.cos(angle) * radius, 8, Math.sin(angle) * radius - 8);
+    groundDecor.add(orb);
+    shrineOrbs.push({ mesh: orb, angle, radius });
+  }
+
+  for (let i = 0; i < 6; i++) {
+    spawnOrb((Math.PI * 2 * i) / 6, 5.5);
+  }
+
+  groundDecor.add(leftPost, rightPost, topBeam, lintel, charm, shrineBase, shrineRoof);
+  groundDecor.position.set(0, 0, 40);
+}
+
+
+function createCherryTree(position = { x: 0, z: 0 }, scale = 1) {
+  const tree = new T.Group();
+
+  const trunk = new T.Mesh(
+    new T.CylinderGeometry(1 * scale, 1.8 * scale, 20 * scale, 10),
+    new T.MeshStandardMaterial({ color: 0x7d4a2c, roughness: 0.9 })
+  );
+  trunk.position.y = 10 * scale;
+  tree.add(trunk);
+
+  const blossomMat = new T.MeshStandardMaterial({
+    color: 0xffc9e1,
+    emissive: 0xff85c1,
+    emissiveIntensity: 0.5,
+    roughness: 0.4
+  });
+
+  function addCanopy(offset, sizeMul) {
+    const canopy = new T.Mesh(new T.SphereGeometry(8 * scale * sizeMul, 24, 16), blossomMat);
+    canopy.position.set(offset.x * scale, (17 + offset.y) * scale, offset.z * scale);
+    tree.add(canopy);
+  }
+
+  addCanopy({ x: 0, y: 0, z: 0 }, 1);
+  addCanopy({ x: 4, y: -1, z: 2 }, 0.7);
+  addCanopy({ x: -4, y: -1, z: -2 }, 0.8);
+
+  const fairyLight = new T.PointLight(0xffa4d7, 25 * scale, 35 * scale);
+  fairyLight.position.set(0, 18 * scale, 0);
+  tree.add(fairyLight);
+
+  tree.position.set(position.x, groundLevel + 5, position.z);
+  cherryTrees.add(tree);
+}
+
+const treeData = [
+  { x: -70, z: -10, scale: 1.3 },
+  { x: 60, z: 5, scale: 1.1 },
+  { x: -40, z: 55, scale: 0.9 },
+  { x: 45, z: 70, scale: 1.4 }
+];
+
+
+
+const petalGeometry = new T.PlaneGeometry(0.8, 1.4);
+const petalMaterial = new T.MeshStandardMaterial({
+  color: 0xffd7f0,
+  emissive: 0xff9fcb,
+  emissiveIntensity: 0.4,
+  side: T.DoubleSide,
+  transparent: true,
+  opacity: 0.85
+});
+
+function spawnPetal() {
+  const mesh = new T.Mesh(petalGeometry, petalMaterial);
+  mesh.rotation.z = Math.random() * Math.PI * 2;
+  petalGroup.add(mesh);
+
+  petals.push({
+    mesh,
+    angle: Math.random() * Math.PI * 2,
+    radius: 25 + Math.random() * 90,
+    height: Math.random() * 10,
+    angularVelocity: 0.3 + Math.random() * 0.5,
+    riseSpeed: 0.7 + Math.random() * 0.5,
+    sway: 0.5 + Math.random() * 2,
+    tumble: (Math.random() - 0.5) * 2
+  });
+}
+
+
+
 //Fully transparent material we will use later for bounding boxes
 const wireframeMat = new T.MeshStandardMaterial({opacity: 0.0, transparent: true});
 const cube = new T.Mesh( geometry, wireframeMat );
@@ -445,6 +608,37 @@ function proto_initialize() {
 
 }
 
+let groundDecor;
+let shrineOrbs;
+let cherryTrees;
+let petalGroup;
+let petals;
+let groundLevel;
+
+function background_initialize() {
+
+  //Decorations inspired by Touhou shrines and paper charms
+  groundDecor = new T.Group();
+  scene.add(groundDecor);
+  shrineOrbs = [];
+
+  //Additional Touhou-style grove + petals
+  cherryTrees = new T.Group();
+  petalGroup = new T.Group();
+  scene.add(cherryTrees);
+  scene.add(petalGroup);
+  petals = [];
+  groundLevel = -7;
+
+  createTouhouGroundSet();
+  for (let i = 0; i < 40; i++) {
+    spawnPetal();
+  }
+  treeData.forEach(({ x, z, scale }) => createCherryTree({ x, z }, scale));
+}
+
+
+
 function animate(timestamp) {
   // Convert time change from milliseconds to seconds
   let timeDelta = 0.001 * (lastTimestamp ? timestamp - lastTimestamp : 0);
@@ -452,11 +646,44 @@ function animate(timestamp) {
 
 
   // animate background objects
+
   if (!prototype) {
     meteorMesh.rotation.y += 0.01 * timeDelta;
     skybox.rotation.z += 0.01 * timeDelta;
     skybox.rotation.x += 0.01 * timeDelta;
+
+    shrineOrbs.forEach((orb, index) => {
+    orb.angle += 0.5 * timeDelta;
+    const bob = Math.sin(timestamp * 0.002 + index) * 0.6;
+    const x = Math.cos(orb.angle) * orb.radius;
+    const z = Math.sin(orb.angle) * orb.radius - 8;
+    orb.mesh.position.set(x, 8 + bob, z);
+    });
+
+    petals.forEach((petal, idx) => {
+    petal.angle += petal.angularVelocity * timeDelta;
+    petal.height += petal.riseSpeed * timeDelta;
+    const wobble = Math.sin(timestamp * 0.003 + idx) * petal.sway;
+    const radius = petal.radius + wobble;
+    const x = Math.cos(petal.angle) * radius;
+    const z = Math.sin(petal.angle) * radius;
+    const y = groundLevel + 6 + petal.height + Math.sin(timestamp * 0.002 + petal.angle) * 1.5;
+
+    petal.mesh.position.set(x, y, z);
+    petal.mesh.rotation.y += 1.2 * timeDelta;
+    petal.mesh.rotation.x += petal.tumble * timeDelta;
+
+    if (petal.height > 35) {
+      petal.height = -5 - Math.random() * 10;
+      petal.radius = 25 + Math.random() * 90;
+      petal.angle = Math.random() * Math.PI * 2;
+    }
+    });
   }
+
+
+
+
   
   // Rotate camera 180 degrees if alt key is pressed
   if (controls[altKey]) {
@@ -699,6 +926,7 @@ function endGame(message = "Game Over!") {
  */
 document.getElementById('start').addEventListener('click', () => {
         if (!sceneActive) {
+            background_initialize();
             requestAnimationFrame(animate);
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('ui').style.display = 'inline-flex';
