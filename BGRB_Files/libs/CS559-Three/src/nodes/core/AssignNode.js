@@ -1,6 +1,6 @@
-import TempNode from '../core/TempNode.js';
+import TempNode from './TempNode.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
-import { vectorComponents } from '../core/constants.js';
+import { vectorComponents } from './constants.js';
 
 /**
  * These node represents an assign operation. Meaning a node is assigned

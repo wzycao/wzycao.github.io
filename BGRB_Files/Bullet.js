@@ -10,7 +10,7 @@ class Bullet {
         
 
         const textureLoader = new T.TextureLoader();
-        const bulletTexture = textureLoader.load('./objects/basic_texture.png');
+        const bulletTexture = textureLoader.load('./BGRB_Files/objects/basic_texture.png');
 
         // Cube Mesh
         const geo = new T.SphereGeometry(5);

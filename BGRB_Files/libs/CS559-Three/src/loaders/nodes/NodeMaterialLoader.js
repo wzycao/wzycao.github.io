@@ -1,4 +1,4 @@
-import { MaterialLoader } from '../../loaders/MaterialLoader.js';
+import { MaterialLoader } from '../MaterialLoader.js';
 
 /**
  * A special type of material loader for loading node materials.

@@ -1,7 +1,7 @@
 import NodeMaterial from '../../materials/nodes/NodeMaterial.js';
 import { vec4, renderOutput } from '../../nodes/TSL.js';
 import { LinearSRGBColorSpace, NoToneMapping } from '../../constants.js';
-import QuadMesh from '../../renderers/common/QuadMesh.js';
+import QuadMesh from './QuadMesh.js';
 
 const _material = /*@__PURE__*/ new NodeMaterial();
 const _quadMesh = /*@__PURE__*/ new QuadMesh( _material );

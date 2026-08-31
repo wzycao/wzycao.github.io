@@ -5,7 +5,7 @@ import { normalLocal, transformNormal } from './Normal.js';
 import { positionLocal } from './Position.js';
 import { nodeProxy, vec3, mat4 } from '../tsl/TSLBase.js';
 import { NodeUpdateType } from '../core/constants.js';
-import { buffer } from '../accessors/BufferNode.js';
+import { buffer } from './BufferNode.js';
 import { instanceIndex } from '../core/IndexNode.js';
 
 import { InstancedInterleavedBuffer } from '../../core/InstancedInterleavedBuffer.js';

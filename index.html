@@ -1,90 +1,10 @@
-<!doctype html>
-<html>
-  <head>
-    <title>BGRB </title>
-    <link rel="icon" type="image/x-icon" href="./favicon.ico">
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-
-    <div id="main-menu">
-          <h1>Welcome to BGRB!</h1>
-          <h3>also known as... <span style="color:blue">Blue = Good</span>, <span style="color:red">Red = Bad</span>.</h3>
-
-          <p>Fly around as Temu Reimu while avoiding bullets and collecting points!</p>
-          <p>Get the higest score you can!</p>
-
-          <button id="start">Start!</button>
-          <button id="controls">Controls</button>
-          <button id="info">More Info</button>
-
-
-          <div id="info-menu">
-            <p>This game is loosely inspired from the Touhou Project series.</p>
-            <p> The twist is that it's 3d instead of 2d, as the games are traditionally.</p> 
-            <p>If you're not aware, in Touhou, you are able to get graze points by flying very close to bullets.</p>
-            <p>Grazing works similarly in this game, but the player hitboxes are a little wonky.</p>
-            <p>Additionally, movement isnt as razor-tight because I think it looks better smooth lol.</p>
-          </div>
-
-          <div id="controls-menu">
-              <p>Note: you currently can't change controls :)</p>
-              <label for="moveUp">Move Up:</label>
-              <input type="text" id="moveUp" name="upKey" value="w"><br><br>
-
-              <label for="moveDown">Move Down:</label>
-              <input type="text" id="moveDown" name="downKey" value="s"><br><br>
-
-              <label for="moveLeft">Rotate Left:</label>
-              <input type="text" id="moveLeft" name="leftKey" value="a"><br><br>
-
-              <label for="moveRight">Rotate Right:</label>
-              <input type="text" id="moveRight" name="rightKey" value="d"><br><br>  
-
-              <label for="accel">Strafe Left:</label>
-              <input type="text" id="strafeLeft" name="strLKey" value="q"><br><br>
-
-              <label for="decel">Strafe Right:</label>
-              <input type="text" id="strafeRight" name="strRKey" value="e"><br><br>  
-
-              <label for="slow">Focus:</label>
-              <input type="text" id="decel" name="decelKey" value="shift"><br><br>  
-
-              <label for="slow">Alt Camera:</label>
-              <input type="text" id="altcam" name="altcamKey" value="alt"><br><br>  
-        
-              <button onclick="changeControls()">Done</button>
-          </div>
-
-    </div>
-    
-    <div id="ui">
-      <h1 style="color:rgb(245, 255, 103)">Speed: <span id="speed">0 </span></h1>
-      <h1 style="color:rgb(212, 255, 111)">Graze: <span id="graze">0 </span></h1>
-      <h1 style="color:rgb(125, 236, 255)">Points: <span id="points">0 </span></h1>
-    </div>
-
-
-    <div id="gameover">
-      <h1>Game Over!</h1>
-      <p id="gameovertext"></p>
-      <br>
-      <p>Your score was: <span id="score">0</span>
-      <br>
-      Reload page to try again!
-      </p><br>
-
-      <span id="greyscreen"></span>
-    </div>
-    
-    <script type="module" src ="/main.js"></script>
-    <script type="importmap">
-      {
-          "imports": {
-              "three": "../libs/CS559-Three/build/three.module.js"
-          }
-      }
-    </script>
-  
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Page</title>
+</head>
+<body>
+    <a href="./BGRB.html">BGRB</a>
+</body>
 </html>

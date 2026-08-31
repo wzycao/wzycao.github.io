@@ -1,10 +1,10 @@
 import { float, nodeObject, normalize, vec4 } from '../tsl/TSLBase.js';
 import { Color } from '../../math/Color.js';
 import NodeMaterial from '../../materials/nodes/NodeMaterial.js';
-import { cameraProjectionMatrix } from '../../nodes/accessors/Camera.js';
-import { modelViewMatrix } from '../../nodes/accessors/ModelNode.js';
-import { positionLocal } from '../../nodes/accessors/Position.js';
-import { normalLocal } from '../../nodes/accessors/Normal.js';
+import { cameraProjectionMatrix } from '../accessors/Camera.js';
+import { modelViewMatrix } from '../accessors/ModelNode.js';
+import { positionLocal } from '../accessors/Position.js';
+import { normalLocal } from '../accessors/Normal.js';
 import { BackSide } from '../../constants.js';
 import PassNode from './PassNode.js';
 

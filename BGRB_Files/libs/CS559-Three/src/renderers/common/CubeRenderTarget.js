@@ -3,7 +3,7 @@ import { texture as TSL_Texture } from '../../nodes/accessors/TextureNode.js';
 import { positionWorldDirection } from '../../nodes/accessors/Position.js';
 import NodeMaterial from '../../materials/nodes/NodeMaterial.js';
 
-import { WebGLCubeRenderTarget } from '../../renderers/WebGLCubeRenderTarget.js';
+import { WebGLCubeRenderTarget } from '../WebGLCubeRenderTarget.js';
 import { Scene } from '../../scenes/Scene.js';
 import { CubeCamera } from '../../cameras/CubeCamera.js';
 import { BoxGeometry } from '../../geometries/BoxGeometry.js';

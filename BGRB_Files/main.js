@@ -86,7 +86,7 @@ const camera = new T.PerspectiveCamera( 75, window.innerWidth / window.innerHeig
 const renderer = new T.WebGLRenderer();
 
 const textureLoader = new T.TextureLoader();
-const skyboxTexture = textureLoader.load('./objects/SpaceSkybox.png');
+const skyboxTexture = textureLoader.load('./BGRB_Files/objects/SpaceSkybox.png');
 const skyboxGeometry = new T.SphereGeometry(900, 32, 32);
 const skyboxMaterial = new T.MeshBasicMaterial({ map: skyboxTexture, side: T.BackSide, 
   color:0x303030});
@@ -123,7 +123,7 @@ const geometry = new T.BoxGeometry( 0.1, 0.1, 0.1 );
 
 //Ground Object
 const texLoad = new T.TextureLoader();
-const meteorText = texLoad.load('./objects/Solarsystemscope_texture_8k_saturn.jpg');
+const meteorText = texLoad.load('./BGRB_Files/objects/Solarsystemscope_texture_8k_saturn.jpg');
 
 const meteorMat = new T.MeshPhongMaterial({map: meteorText,
                                           color:0x7a7a7a,
@@ -350,7 +350,7 @@ let bowMat = new T.MeshPhongMaterial({
       shininess: 30
     });
 
-let main_man = await loader.loadAsync("./objects/FinalBaseMesh.obj");
+let main_man = await loader.loadAsync("./BGRB_Files/objects/FinalBaseMesh.obj");
 
 main_man.traverse(obj => {
         if (obj instanceof T.Mesh) {
@@ -364,7 +364,7 @@ cube.add(main_man);
 
 // bow to make him sliiightly resemble a touhou character
 
-let bow = await loader.loadAsync("./objects/19331_Bow_v1.obj");
+let bow = await loader.loadAsync("./BGRB_Files/objects/19331_Bow_v1.obj");
 
 bow.traverse(obj => {
         if (obj instanceof T.Mesh) {
@@ -398,25 +398,25 @@ const pickupPowerup = new T.Audio( listener);
 
 const audioLoader = new T.AudioLoader();
 
-audioLoader.load( 'sounds/graze.wav', function( buffer ) {
+audioLoader.load( 'BGRB_Files/sounds/graze.wav', function(buffer ) {
 	grazeSound.setBuffer( buffer );
 	grazeSound.setLoop( false );
 	grazeSound.setVolume( 0.5 );
 });
 
-audioLoader.load( 'sounds/pldead00.wav', function( buffer ) {
+audioLoader.load( 'BGRB_Files/sounds/pldead00.wav', function(buffer ) {
 	deathSound.setBuffer( buffer );
 	deathSound.setLoop( false );
 	deathSound.setVolume( 0.5 );
 });
 
-audioLoader.load( 'sounds/kira01.wav', function( buffer ) {
+audioLoader.load( 'BGRB_Files/sounds/kira01.wav', function(buffer ) {
 	pickupPowerup.setBuffer( buffer );
 	pickupPowerup.setLoop( false );
 	pickupPowerup.setVolume( 0.5 );
 });
 
-audioLoader.load( 'sounds/A Soul as Red as a Ground Cherry.mp3', function( buffer ) {
+audioLoader.load( 'BGRB_Files/sounds/A Soul as Red as a Ground Cherry.mp3', function(buffer ) {
 	music.setBuffer( buffer );
 	music.setLoop( true );
 	music.setVolume( 0.125 );

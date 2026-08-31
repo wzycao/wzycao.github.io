@@ -9,7 +9,7 @@ class Powerup {
 
         const PowerupTextureLoader = new T.TextureLoader();
 
-        let powerupTexture = PowerupTextureLoader.load('./objects/PointTexture.png');
+        let powerupTexture = PowerupTextureLoader.load('./BGRB_Files/objects/PointTexture.png');
         // Cube Mesh
         const geo = new T.BoxGeometry(2, 2, 2);
         const mat = new T.MeshStandardMaterial({

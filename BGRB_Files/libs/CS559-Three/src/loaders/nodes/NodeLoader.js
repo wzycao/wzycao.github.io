@@ -1,7 +1,7 @@
 import { nodeObject, float } from '../../nodes/tsl/TSLBase.js';
 
 import { Loader } from '../Loader.js';
-import { FileLoader } from '../../loaders/FileLoader.js';
+import { FileLoader } from '../FileLoader.js';
 
 /**
  * A loader for loading node objects in the three.js JSON Object/Scene format.

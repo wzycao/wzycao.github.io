@@ -6,7 +6,7 @@ class Pillar {
         this.y = position.y;
         this.z = position.z;
         let pillarLoader = new T.TextureLoader();
-        let pillarTex = pillarLoader.load('./objects/pillar_tex.png');
+        let pillarTex = pillarLoader.load('./BGRB_Files/objects/pillar_tex.png');
 
         const geo = new T.CylinderGeometry(5, 5, 100, 32);
         const mat = new T.MeshStandardMaterial({
